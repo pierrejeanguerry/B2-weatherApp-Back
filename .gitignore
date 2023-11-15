@@ -1,3 +1,6 @@
+﻿.obsidian/plugins
+.obsidian/themes
+.obsidian
 
 ###> symfony/framework-bundle ###
 /.env.local
