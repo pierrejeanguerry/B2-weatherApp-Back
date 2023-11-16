@@ -1,0 +1,11 @@
+{
+	"nodes":[
+		{"id":"2783de7d128fb0f3","x":200,"y":-331,"width":250,"height":311,"type":"text","text":"# READINGS\n\\_id: ObjectId\nstation_id: ObjectId\ndate: Date/Timestamp\ntemperature: float\nhumidity: int/float/%\nairQualityIndex: int/float/%"},
+		{"id":"55ba0c48d2f768f7","x":-560,"y":-331,"width":250,"height":311,"type":"text","text":"# USERS\n\\_id: ObjectId\nlogin: String\npassword: SHA512 ?\nfirstName: String\nfamilyName: String\n\n"},
+		{"id":"c081dbfdd1c8beb9","x":-180,"y":-331,"width":250,"height":311,"type":"text","text":"# STATIONS\n\\_id: ObjectId\nactivationDate: Date\nname: String\nuser_id: ObjectId\n"}
+	],
+	"edges":[
+		{"id":"eaf5a9e543245d64","fromNode":"55ba0c48d2f768f7","fromSide":"right","toNode":"c081dbfdd1c8beb9","toSide":"left"},
+		{"id":"a0e251ca19909998","fromNode":"c081dbfdd1c8beb9","fromSide":"right","toNode":"2783de7d128fb0f3","toSide":"left"}
+	]
+}
