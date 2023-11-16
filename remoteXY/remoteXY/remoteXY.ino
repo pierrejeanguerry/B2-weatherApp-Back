@@ -1,58 +1,70 @@
-// RemoteXY select connection mode and include library 
-#define REMOTEXY_MODE__ESP32CORE_BLE
-#include <BLEDevice.h>
+#include <WiFi.h>
 
-#include <RemoteXY.h>
+const char* ssid     = "RemoteXYZ?";
+const char* password = "12345678";
 
-// RemoteXY connection settings 
-#define REMOTEXY_BLUETOOTH_NAME "RemoteXY"
-
-
-// RemoteXY configurate  
-#pragma pack(push, 1)
-uint8_t RemoteXY_CONF[] =   // 67 bytes
-  { 255,43,0,0,0,60,0,16,31,1,7,36,22,26,20,5,2,26,2,31,
-  7,36,22,45,20,5,2,26,2,11,129,0,25,17,13,6,17,83,83,73,
-  68,0,129,0,17,36,28,6,17,80,97,115,115,119,111,114,100,0,1,0,
-  26,62,12,12,2,31,0 };
-  
-// this structure defines all the variables and events of your control interface 
-struct {
-
-    // input variables
-  char ssid[31];  // string UTF8 end zero  
-  char password[11];  // string UTF8 end zero  
-  uint8_t button_1; // =1 if button pressed, else =0 
-
-    // other variable
-  uint8_t connect_flag;  // =1 if wire connected, else =0 
-
-} RemoteXY;
-#pragma pack(pop)
-
-/////////////////////////////////////////////
-//           END RemoteXY include          //
-/////////////////////////////////////////////
+WiFiServer server(80);
+String header;
 
 
-
-void setup() 
-{
-  RemoteXY_Init (); 
-  
-  
-  // TODO you setup code
-  
+void setup() {
+  Serial.begin(9600);
+  WiFi.softAP(ssid, password);
+  Serial.println(WiFi.softAPIP());
+  server.begin();
 }
 
-void loop() 
-{ 
-  RemoteXY_Handler ();
-  
-  
-  // TODO you loop code
-  // use the RemoteXY structure for data transfer
-  // do not call delay(), use instead RemoteXY_delay() 
+void loop() {
+  WiFiClient client = server.available();   // Listen for incoming clients
 
+  if (client) {                             // If a new client connects,
+    Serial.println("New Client.");          // print a message out in the serial port
+    String currentLine = "";                // make a String to hold incoming data from the client
+    while (client.connected()) {            // loop while the client's connected
+      if (client.available()) {             // if there's bytes to read from the client,
+        char c = client.read();             // read a byte, then
+        Serial.write(c);                    // print it out the serial monitor
+        header += c;
+        if (c == '\n') {                    // if the byte is a newline character
+          // if the current line is blank, you got two newline characters in a row.
+          // that's the end of the client HTTP request, so send a response:
+          if (currentLine.length() == 0) {
+            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+            // and a content-type so the client knows what's coming, then a blank line:
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/html");
+            client.println("Connection: close");
+            client.println();
 
+            client.println("<!DOCTYPE html><html>");
+            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            client.println("<link rel=\"icon\" href=\"data:,\">");
+            // CSS to style the on/off buttons 
+            // Feel free to change the background-color and font-size attributes to fit your preferences
+            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
+            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
+            
+            // Web Page Heading
+            client.println("<body><h1>Weather Station Wifi Login</h1>");
+            client.println("</body></html>");
+            
+            // The HTTP response ends with another blank line
+            client.println();
+            // Break out of the while loop
+            break;
+          } else { // if you got a newline, then clear currentLine
+            currentLine = "";
+          }
+        } else if (c != '\r') {  // if you got anything else but a carriage return character,
+          currentLine += c;      // add it to the end of the currentLine
+        }
+      }
+    }
+    // Clear the header variable
+    header = "";
+    // Close the connection
+    client.stop();
+    Serial.println("Client disconnected.");
+    Serial.println("");
+  }
 }
