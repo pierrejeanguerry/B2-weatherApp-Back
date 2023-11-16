@@ -1,0 +1,1 @@
+mongosh --file .\weatherstation_db.js

@@ -2,7 +2,7 @@
 db = connect( 'mongodb://localhost/weatherstation' );
 
 
-db.user.intertOne(
+db.user.insertOne(
     {
         first_name: 'John',
         last_name: 'Smith',
