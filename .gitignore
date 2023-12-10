@@ -4,6 +4,7 @@
 .obsidian
 server/node_modules
 Backend/node_modules
+Backend/.env
 
 ###> symfony/framework-bundle ###
 /.env.local
