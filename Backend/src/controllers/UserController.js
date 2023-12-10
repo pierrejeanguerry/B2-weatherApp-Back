@@ -11,10 +11,17 @@ class UserController {
   }
 
   async addUser(req, res) {
-    const { username, email } = req.body;
+    const { username, email, first_name, second_name, password } = req.body;
 
     try {
-      const newUser = new UserModel({ username, email });
+      const newUser = new UserModel({
+        username,
+        email,
+        first_name,
+        second_name,
+        password,
+        inscription_date: new Date(),
+      });
       await newUser.save();
       res.status(201).json({ message: "User added successfully" });
     } catch (error) {
