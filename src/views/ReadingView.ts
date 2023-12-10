@@ -1,5 +1,4 @@
 class ReadingView {
-  // Vous pourriez ajouter des méthodes liées à l'affichage ici
   static renderReading(reading) {
     return {
       id: reading._id,

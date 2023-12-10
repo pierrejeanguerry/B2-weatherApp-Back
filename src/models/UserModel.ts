@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     bcrypt: true,
   },
-  firt_name: {
+  first_name: {
     type: String,
     required: true,
   },
