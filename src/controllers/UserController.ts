@@ -1,4 +1,4 @@
-import UserModel from "../models/UserModel";
+import { UserModel } from "../models/UserModel";
 import { Request, Response } from "express";
 
 class UserController {
@@ -31,15 +31,15 @@ class UserController {
     }
   }
 
-  async getUserById(req: Request, res: Response) {
-    const userId = req.params.userId;
+  async getUserByEmail(req: Request, res: Response): Promise<any> {
+    const userEmail = req.body.email;
 
     try {
-      const user = await UserModel.findById(userId);
+      const user = await UserModel.findOne({ email: userEmail });
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      res.json(user);
+      return user;
     } catch (error) {
       res.status(500).json({ error: "Internal Server Error" });
     }
