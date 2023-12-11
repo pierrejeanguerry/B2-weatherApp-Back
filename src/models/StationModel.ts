@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const stationSchema = new mongoose.Schema({
   activation_date: {
@@ -20,4 +20,4 @@ const stationSchema = new mongoose.Schema({
 
 const StationModel = mongoose.model("Station", stationSchema);
 
-module.exports = StationModel;
+export default StationModel;

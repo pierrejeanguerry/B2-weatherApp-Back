@@ -1,7 +1,8 @@
-const UserModel = require("../models/UserModel");
+import UserModel from "../models/UserModel";
+import { Request, Response } from "express";
 
 class UserController {
-  async getAllUsers(req, res) {
+  async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
       const users = await UserModel.find();
       res.json(users);
@@ -10,7 +11,7 @@ class UserController {
     }
   }
 
-  async addUser(req, res) {
+  async addUser(req: Request, res: Response) {
     const { username, email, first_name, second_name, password } = req.body;
 
     try {
@@ -29,7 +30,7 @@ class UserController {
     }
   }
 
-  async getUserById(req, res) {
+  async getUserById(req: Request, res: Response) {
     const userId = req.params.userId;
 
     try {
@@ -43,7 +44,7 @@ class UserController {
     }
   }
 
-  async updateUser(req, res) {
+  async updateUser(req: Request, res: Response) {
     const userId = req.params.userId;
     const { username, email } = req.body;
 
@@ -64,7 +65,7 @@ class UserController {
     }
   }
 
-  async deleteUser(req, res) {
+  async deleteUser(req: Request, res: Response) {
     const userId = req.params.userId;
 
     try {
@@ -81,4 +82,4 @@ class UserController {
   }
 }
 
-module.exports = new UserController();
+export default new UserController();

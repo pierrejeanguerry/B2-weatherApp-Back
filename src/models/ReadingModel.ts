@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const readingSchema = new mongoose.Schema({
   station_id: {
@@ -21,4 +21,4 @@ const readingSchema = new mongoose.Schema({
 
 const ReadingModel = mongoose.model("Reading", readingSchema);
 
-module.exports = ReadingModel;
+export default ReadingModel;
