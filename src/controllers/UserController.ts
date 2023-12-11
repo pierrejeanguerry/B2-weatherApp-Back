@@ -2,15 +2,6 @@ import { UserModel } from "../models/UserModel";
 import { Request, Response } from "express";
 
 class UserController {
-  async getAllUsers(req: Request, res: Response): Promise<void> {
-    try {
-      const users = await UserModel.find();
-      res.json(users);
-    } catch (error) {
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  }
-
   async addUser(req: Request, res: Response) {
     const { username, email, first_name, second_name, password } = req.body;
 

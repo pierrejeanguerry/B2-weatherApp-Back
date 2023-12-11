@@ -12,9 +12,6 @@ interface TokenPayload {
   // Autres propriétés du payload
 }
 router.post("/", (req, res) => {
-  // const token = jwt.sign({ _id, email }, `${process.env.SECRET_KEY}`, {
-  //     expiresIn: "1h",
-  //   });
   const token = req.headers.authorization?.split(" ")[1];
   const isValid = jwt.verify(`${token}`, `${process.env.SECRET_KEY}`);
   if (!isValid) {
@@ -30,11 +27,8 @@ router.post("/", (req, res) => {
 
     UserController.addUserToStation(req, res, tokenPayload._id);
   } else {
-    // Le token n'a pas pu être décodé correctement
     console.error("Erreur lors du décodage du token");
   }
-
-  //   UserController.addUser(req, res);
 });
 
 export default router;
