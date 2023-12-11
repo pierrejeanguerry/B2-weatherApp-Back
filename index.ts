@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import mongoose, { ConnectOptions } from "mongoose";
 import stationRoutes from "./src/routes/stationActions/stationRoutes";
 import userRoutes from "./src/routes/userActions/userRoutes";
+import cors from "cors";
 
 require("dotenv").config();
 

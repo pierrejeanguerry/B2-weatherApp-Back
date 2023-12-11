@@ -5,8 +5,13 @@ let router = express.Router();
 // const UserController = require("../../controllers/UserController");
 
 router.post("/", (req, res) => {
-  UserController.addUser(req.body, res);
-  res.json({ message: "Données récupérées avec succès depuis l'URL" });
+  if (req.body.password !== req.body.repeatPassword) {
+    res
+      .status(400)
+      .json({ error: "Password and Repeat password are different" });
+  } else {
+    UserController.addUser(req, res);
+  }
 });
 
 export default router;
