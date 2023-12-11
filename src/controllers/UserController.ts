@@ -37,11 +37,33 @@ class UserController {
     try {
       const user = await UserModel.findOne({ email: userEmail });
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(400).json({ error: "WRONG_ID" });
       }
       return user;
     } catch (error) {
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: "INTERNAL_SERVEUR_ERROR" });
+    }
+  }
+
+  async addUserToStation(
+    req: Request,
+    res: Response,
+    user_id: string
+  ): Promise<any> {
+    const macAdress = req.body.macAdress;
+    console.log("mac_address: " + macAdress);
+    try {
+      const station = await StationModel.findOne({ mac_address: macAdress });
+      if (!station) {
+        return res.status(400).json({ error: "MAC_ADDRESS_ERROR" });
+      }
+      await StationModel.updateOne(
+        { _id: station._id },
+        { $set: { user_id: user_id } }
+      );
+      res.status(200).json({ message: "Success" });
+    } catch (error) {
+      res.status(500).json({ error: "INTERNAL_SERVEUR_ERROR" });
     }
   }
 
