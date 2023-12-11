@@ -6,7 +6,7 @@ interface IUser {
   inscription_date: Date;
   email: String;
   first_name: string;
-  second_name: string;
+  last_name: string;
   password: string;
   username: string;
 }
@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, UserMethods>({
     type: String,
     required: true,
   },
-  second_name: {
+  last_name: {
     type: String,
     required: true,
   },

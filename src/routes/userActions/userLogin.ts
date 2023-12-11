@@ -14,7 +14,7 @@ router.post("/", (req, res) => {
     })
       .isValidPassword(req.body.password)
       .then((isValid) => {
-        if (!isValid) res.status(400).json({ error: "mot de passe incorrect" });
+        if (!isValid) res.status(400).json({ error: "WRONG_ID" });
         const token = jwt.sign({ _id, email }, `${process.env.SECRET_KEY}`, {
           expiresIn: "1h",
         });
