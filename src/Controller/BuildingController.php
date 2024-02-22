@@ -25,7 +25,7 @@ class BuildingController extends AbstractController
         $buildings = $user->getBuildings();
         return $this->json([
             'message' => 'ok',
-            'buildings' => $buildings,
+            'list_building' => $buildings,
             ], Response::HTTP_OK);
             
         

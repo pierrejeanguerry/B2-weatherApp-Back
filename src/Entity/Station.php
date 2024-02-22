@@ -22,6 +22,10 @@ class Station
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $activation_date = null;
 
+    #[ORM\ManyToOne(targetEntity:"App\Entity\Room", inversedBy:"stations")]
+    #[ORM\JoinColumn(nullable:false)]
+    private $room;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -48,6 +52,12 @@ class Station
     {
         $this->activation_date = $activation_date;
 
+        return $this;
+    }
+
+    public function setRoom(?Room $room): self
+    {
+        $this->room = $room;
         return $this;
     }
 }

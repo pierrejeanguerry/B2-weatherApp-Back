@@ -3,6 +3,8 @@
 namespace App\DataFixtures;
 
 use App\Entity\Building;
+use App\Entity\Room;
+use App\Entity\Station;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -20,6 +22,7 @@ class AppFixtures extends Fixture
     public function load(ObjectManager $manager)
     {
         $faker = Faker\Factory::create('fr_FR');
+        $t = microtime(true);
 
         $user = new User();
         $password = $this->hasher->hashPassword($user, 'pj');
@@ -30,28 +33,26 @@ class AppFixtures extends Fixture
            $buildings = Array();
            for ($i = 0; $i < 4; $i++) {
                $buildings[$i] = new Building();
-               $buildings[$i]->setName($faker->userName);
+               $buildings[$i]->setName($faker->streetAddress);
                $buildings[$i]->setUser($user);
+               $rooms = Array();
+               for ($j = 0; $j < 2; $j++) {
+                    $rooms[$j] = new Room;
+                    $rooms[$j]->setName($faker->buildingNumber);
+                    $rooms[$j]->setBuilding($buildings[$i]);
+                    $stations = Array();
+                    for ($k = 0; $k < 2; $k++) {
+                        $stations[$k] = new Station;
+                        $stations[$k]->setName($faker->country);
+                        $stations[$k]->setRoom($rooms[$j]);
+                        $stations[$k]->setActivationDate(\DateTime::createFromFormat('U.u', sprintf('%f', $t)));
+                        $manager->persist($stations[$k]);
+                    }
+                    $manager->persist($rooms[$j]);
+               }
                $manager->persist($buildings[$i]);
            }
         $manager->persist($user);
-
-        $user = new User();
-        $password = $this->hasher->hashPassword($user, 'pj');
-        $user->setUsername("pj")
-        ->setPassword($password)
-        ->setEmail("pj@pj.com")
-        ->setRoles($user->getRoles());
-        $manager->persist($user);
-
-        $user = new User();
-        $password = $this->hasher->hashPassword($user, 'pj');
-        $user->setUsername("pj")
-        ->setPassword($password)
-        ->setEmail("pj@pj.org")
-        ->setRoles($user->getRoles());
-        $manager->persist($user);
-
 
            $auteurs = Array();
            for ($i = 0; $i < 4; $i++) {

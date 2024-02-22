@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\BuildingRepository;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BuildingRepository::class)]
@@ -21,6 +22,9 @@ class Building
     #[ORM\ManyToOne(targetEntity:"App\Entity\User", inversedBy:"buildings")]
     #[ORM\JoinColumn(nullable:false)]
     private $user;
+
+    #[ORM\OneToMany(targetEntity:"App\Entity\Room", mappedBy:"building")]
+    private $rooms;
 
     public function getId(): ?int
     {
@@ -44,5 +48,10 @@ class Building
         $this->user = $user;
 
         return $this;
+    }
+
+    public function getRooms(): Collection
+    {
+        return $this->rooms;
     }
 }
