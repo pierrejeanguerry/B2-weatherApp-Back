@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Building;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -18,12 +19,21 @@ class AppFixtures extends Fixture
 
     public function load(ObjectManager $manager)
     {
+        $faker = Faker\Factory::create('fr_FR');
+
         $user = new User();
         $password = $this->hasher->hashPassword($user, 'pj');
         $user->setUsername("pj")
         ->setPassword($password)
         ->setEmail("pj@pj.fr")
         ->setRoles($user->getRoles());
+           $buildings = Array();
+           for ($i = 0; $i < 4; $i++) {
+               $buildings[$i] = new Building();
+               $buildings[$i]->setName($faker->userName);
+               $buildings[$i]->setUser($user);
+               $manager->persist($buildings[$i]);
+           }
         $manager->persist($user);
 
         $user = new User();
@@ -41,7 +51,8 @@ class AppFixtures extends Fixture
         ->setEmail("pj@pj.org")
         ->setRoles($user->getRoles());
         $manager->persist($user);
-       $faker = Faker\Factory::create('fr_FR');
+
+
            $auteurs = Array();
            for ($i = 0; $i < 4; $i++) {
                $auteurs[$i] = new User();
