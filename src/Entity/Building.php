@@ -18,6 +18,10 @@ class Building
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\ManyToOne(targetEntity:"App\Entity\User", inversedBy:"buildings")]
+    #[ORM\JoinColumn(nullable:false)]
+    private $user;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -31,6 +35,13 @@ class Building
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }

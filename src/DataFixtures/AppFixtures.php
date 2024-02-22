@@ -26,6 +26,21 @@ class AppFixtures extends Fixture
         ->setRoles($user->getRoles());
         $manager->persist($user);
 
+        $user = new User();
+        $password = $this->hasher->hashPassword($user, 'pj');
+        $user->setUsername("pj")
+        ->setPassword($password)
+        ->setEmail("pj@pj.com")
+        ->setRoles($user->getRoles());
+        $manager->persist($user);
+
+        $user = new User();
+        $password = $this->hasher->hashPassword($user, 'pj');
+        $user->setUsername("pj")
+        ->setPassword($password)
+        ->setEmail("pj@pj.org")
+        ->setRoles($user->getRoles());
+        $manager->persist($user);
        $faker = Faker\Factory::create('fr_FR');
            $auteurs = Array();
            for ($i = 0; $i < 4; $i++) {
