@@ -50,7 +50,7 @@ class Room
         return $this;
     }
 
-    public function getStation(): Collection
+    public function getStations(): Collection
     {
         return $this->stations;
     }
