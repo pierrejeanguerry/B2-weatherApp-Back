@@ -11,14 +11,6 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class LoginController extends AbstractController
 {
-    #[Route('/api/hello', name: 'api_hello', methods: ['GET', 'POST'])]
-    public function hello(): Response
-    {
-      return ($this->json([
-        'content' => 'hello'
-      ]));
-    }
-
     #[Route('/api/login', name: 'api_login', methods: ['POST'])]
     public function index(#[CurrentUser()] ?User $user, Request $request): Response
       {
@@ -30,7 +22,6 @@ class LoginController extends AbstractController
         }
         $token = bin2hex(random_bytes(32));
         $session = $request->getSession();
-        // $session->start();
         $session->set('token_user', $token);
         return $this->json([
             'token_user' => $token,
