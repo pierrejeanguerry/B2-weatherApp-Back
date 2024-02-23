@@ -46,6 +46,8 @@ class AppFixtures extends Fixture
                         $stations[$k]->setName($faker->country);
                         $stations[$k]->setRoom($rooms[$j]);
                         $stations[$k]->setActivationDate(\DateTime::createFromFormat('U.u', sprintf('%f', $t)));
+                        $stations[$k]->setToken(bin2hex(random_bytes(32)));
+
                         $manager->persist($stations[$k]);
                     }
                     $manager->persist($rooms[$j]);

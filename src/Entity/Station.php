@@ -16,15 +16,18 @@ class Station
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable:true)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable:true)]
     private ?\DateTimeInterface $activation_date = null;
 
     #[ORM\ManyToOne(targetEntity:"App\Entity\Room", inversedBy:"stations")]
-    #[ORM\JoinColumn(nullable:false)]
+    #[ORM\JoinColumn(nullable:true)]
     private $room;
+
+    #[ORM\Column(length: 64)]
+    private ?string $token = null;
 
     public function getId(): ?int
     {
@@ -58,6 +61,18 @@ class Station
     public function setRoom(?Room $room): self
     {
         $this->room = $room;
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(string $token): static
+    {
+        $this->token = $token;
+
         return $this;
     }
 }
