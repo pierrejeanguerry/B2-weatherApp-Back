@@ -45,8 +45,12 @@ class GenerateStationTokenCommand extends Command
         for ($nb = 0; $nb < $arg; $nb++) {
             $stations[$nb] = new Station;
             $stations[$nb]->setToken(bin2hex(random_bytes(32)));
-            $tableRows[] = [$stations[$nb]->getId(), $stations[$nb]->getToken()];
+            $stations[$nb]->setName(NULL);
+            $stations[$nb]->setActivationDate(NULL);
+            $stations[$nb]->setRoom(NULL);
             $this->manager->persist($stations[$nb]);
+            $tableRows[] = [$stations[$nb]->getId(), $stations[$nb]->getToken()];
+
         }
         $this->manager->flush();
         $io->table($tableHeaders, $tableRows);

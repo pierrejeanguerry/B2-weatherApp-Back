@@ -16,10 +16,10 @@ class Station
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable:true)]
+    #[ORM\Column(nullable:true, length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable:true)]
+    #[ORM\Column(nullable:true, type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $activation_date = null;
 
     #[ORM\ManyToOne(targetEntity:"App\Entity\Room", inversedBy:"stations")]
@@ -39,7 +39,7 @@ class Station
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): static
     {
         $this->name = $name;
 
@@ -51,7 +51,7 @@ class Station
         return $this->activation_date;
     }
 
-    public function setActivationDate(\DateTimeInterface $activation_date): static
+    public function setActivationDate(?\DateTimeInterface $activation_date): static
     {
         $this->activation_date = $activation_date;
 
