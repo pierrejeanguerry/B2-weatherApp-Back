@@ -55,7 +55,7 @@ class LoginController extends AbstractController
             'message' => 'missing or wrong credentials',
             ], Response::HTTP_UNAUTHORIZED);
         }
-        $session->session_destroy;
+        $session->invalidate();
         return $this->json([
           'message' => 'session destroyed',
         ], Response::HTTP_OK);
