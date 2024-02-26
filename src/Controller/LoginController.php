@@ -27,4 +27,20 @@ class LoginController extends AbstractController
             'token_user' => $token,
         ]);
     }
+
+    #[Route('/api/login/check', name: 'check_login', methods: ['POST'])]
+    public function check(#[CurrentUser()] ?User $user, Request $request): Response
+      {
+        
+        $session = $request->getSession();
+        $token = $request->headers->get('token_user');
+        if (null === $user || !($token == $session->get("token_user"))) {
+          return $this->json([
+            'message' => 'missing or wrong credentials',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        return $this->json([
+          'message' => 'credentials are valid',
+        ], Response::HTTP_OK);
+    }
 }
