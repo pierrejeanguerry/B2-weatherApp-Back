@@ -43,4 +43,21 @@ class LoginController extends AbstractController
           'message' => 'credentials are valid',
         ], Response::HTTP_OK);
     }
+
+    #[Route('/api/login/logout', name: 'logout_login', methods: ['POST'])]
+    public function logout(#[CurrentUser()] ?User $user, Request $request): Response
+      {
+        
+        $session = $request->getSession();
+        $token = $request->headers->get('token_user');
+        if (null === $user || !($token == $session->get("token_user"))) {
+          return $this->json([
+            'message' => 'missing or wrong credentials',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $session->session_destroy;
+        return $this->json([
+          'message' => 'session destroyed',
+        ], Response::HTTP_OK);
+    }
 }
