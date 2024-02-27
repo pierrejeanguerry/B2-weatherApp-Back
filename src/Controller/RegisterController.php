@@ -39,14 +39,14 @@ class RegisterController extends AbstractController
             $manager->flush();
             $manager->getConnection()->commit();
             return $this->json([
-                'message' => 'user created',
+                'message' => 'User created',
                 ], Response::HTTP_CREATED);
 
         } catch (UniqueConstraintViolationException $e){
             $manager->getConnection()->rollBack();
             return $this->json([
-                'message' => 'Email already used',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                'message' => 'User already exist',
+                ], Response::HTTP_CONFLICT);
         }
     }
 }
