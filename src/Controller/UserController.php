@@ -69,7 +69,9 @@ class UserController extends AbstractController
         $jsonbody = $request->getContent();
         $body = json_decode($jsonbody, true);
         $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
+        if (null === $user ||
+            !($token == $session->get("token_user")) || 
+            !password_verify($body["currentPassword"], $user->getPassword())) {
           return $this->json([
             'message' => 'missing or wrong credentials',
             ], Response::HTTP_UNAUTHORIZED);
