@@ -14,7 +14,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class BuildingController extends AbstractController
 {
-    #[Route('/api/building/list', name: 'building_list', methods: ['POST'])]
+    #[Route('/api/building/list', name: 'building_list', methods: ['GET'])]
     public function index(#[CurrentUser()] User $user, Request $request): Response
     {
         $session = $request->getSession();

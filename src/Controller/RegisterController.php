@@ -27,12 +27,17 @@ class RegisterController extends AbstractController
             ->setRoles($user->getRoles());
 
             $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,20}$/';
+            $emailPattern = '/^[^\s@]+@[^\s@]+\.[^\s@]+$/';
             if (!preg_match($pattern, $body['password'])){
                 return $this->json([
                     'message' => 'Password problem',
                     ], Response::HTTP_BAD_REQUEST);
             }
-
+            if (!$body['username'] || !preg_match($emailPattern, $body['username'])){
+                return $this->json([
+                    'message' => 'Email problem',
+                    ], Response::HTTP_BAD_REQUEST);
+            }
             $password = $hasher->hashPassword($user, $body['password']);
             $user->setPassword($password);
             $manager->persist($user);

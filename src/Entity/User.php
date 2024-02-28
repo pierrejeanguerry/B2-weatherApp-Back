@@ -33,7 +33,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    #[ORM\OneToMany(targetEntity:"App\Entity\Building", mappedBy:"user")]
+    #[ORM\OneToMany(targetEntity:"App\Entity\Building", mappedBy:"user", cascade:["remove"])]
     private $buildings;
 
     public function getId(): ?int

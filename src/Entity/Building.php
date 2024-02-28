@@ -23,7 +23,7 @@ class Building
     #[ORM\JoinColumn(nullable:false)]
     private $user;
 
-    #[ORM\OneToMany(targetEntity:"App\Entity\Room", mappedBy:"building")]
+    #[ORM\OneToMany(targetEntity:"App\Entity\Room", mappedBy:"building", cascade:["remove"])]
     private $rooms;
 
     public function getId(): ?int
