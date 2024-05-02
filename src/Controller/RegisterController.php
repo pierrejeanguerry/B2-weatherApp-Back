@@ -33,7 +33,7 @@ class RegisterController extends AbstractController
                     'message' => 'Password problem',
                     ], Response::HTTP_BAD_REQUEST);
             }
-            if (!$body['username'] || !preg_match($emailPattern, $body['username'])){
+            if (!$body['email'] || !preg_match($emailPattern, $body['email'])){
                 return $this->json([
                     'message' => 'Email problem',
                     ], Response::HTTP_BAD_REQUEST);
