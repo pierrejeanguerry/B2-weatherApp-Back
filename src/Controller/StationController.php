@@ -52,7 +52,6 @@ class StationController extends AbstractController
         $manager->getConnection()->beginTransaction();
 
         try{
-            $t = microtime(true);
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
             $room = $roomRepo->findOneBy(['id' => $body['id_room']]);

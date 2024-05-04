@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\StationRepository;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -26,8 +27,12 @@ class Station
     #[ORM\JoinColumn(nullable:true)]
     private $room;
 
-    #[ORM\Column(length: 64)]
-    private ?string $token = null;
+    #[ORM\OneToMany(targetEntity:"App\Entity\Reading", mappedBy:"station", cascade:["remove"])]
+    private $readings;
+
+    #[ORM\Column(length: 17, unique:true)]
+    private ?string $mac = null;
+    // d4:8a:fc:a7:76:fc
 
     public function getId(): ?int
     {
@@ -64,15 +69,20 @@ class Station
         return $this;
     }
 
-    public function getToken(): ?string
+    public function getMac(): ?string
     {
-        return $this->token;
+        return $this->mac;
     }
 
-    public function setToken(string $token): static
+    public function setMac(string $mac): static
     {
-        $this->token = $token;
+        $this->mac = $mac;
 
         return $this;
+    }
+
+    public function getReadings(): Collection
+    {
+        return $this->readings;
     }
 }

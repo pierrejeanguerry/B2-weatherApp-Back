@@ -19,14 +19,21 @@ class Reading
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?float $temperature = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?int $humidity = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
-    private ?int $air_quality_index = null;
+    private ?int $altitude = null;
+
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    private ?int $pressure = null;
+
+    #[ORM\ManyToOne(targetEntity:"App\Entity\Station", inversedBy:"readings")]
+    #[ORM\JoinColumn(nullable:false)]
+    private $station;
 
     public function getId(): ?int
     {
@@ -69,14 +76,33 @@ class Reading
         return $this;
     }
 
-    public function getAirQualityIndex(): ?int
+    public function getAltitude(): ?int
     {
-        return $this->air_quality_index;
+        return $this->altitude;
     }
 
-    public function setAirQualityIndex(?int $air_quality_index): static
+    public function setAltitude(?int $altitude): static
     {
-        $this->air_quality_index = $air_quality_index;
+        $this->altitude = $altitude;
+
+        return $this;
+    }
+
+    public function getPressure(): ?int
+    {
+        return $this->pressure;
+    }
+
+    public function setPressure(?int $pressure): static
+    {
+        $this->pressure = $pressure;
+
+        return $this;
+    }
+
+    public function setStation(?Station $station): self
+    {
+        $this->station = $station;
 
         return $this;
     }
