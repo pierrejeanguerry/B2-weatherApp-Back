@@ -19,17 +19,17 @@ class Reading
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date = null;
 
-    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
     private ?float $temperature = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?int $humidity = null;
 
-    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
-    private ?int $altitude = null;
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    private ?float $altitude = null;
 
-    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
-    private ?int $pressure = null;
+    #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    private ?float $pressure = null;
 
     #[ORM\ManyToOne(targetEntity:"App\Entity\Station", inversedBy:"readings")]
     #[ORM\JoinColumn(nullable:false)]
