@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Reading;
 use App\Entity\Station;
+use App\Entity\User;
 use App\Repository\StationRepository;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class ReadingController extends AbstractController
 {
@@ -66,6 +68,32 @@ class ReadingController extends AbstractController
             ], Response::HTTP_CREATED);
     }
 
-
+    #[Route('/api/reading/list', name: 'list_reading')]
+    public function list(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, StationRepository $stationRepo): Response
+    {
+        $session = $request->getSession();
+        $token = $request->headers->get('token_user');
+        if (null === $user || !($token == $session->get("token_user"))) {
+          return $this->json([
+            'message' => 'missing credentials',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        try{
+            $jsonbody = $request->getContent();
+            $body = json_decode($jsonbody, true);
+            $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
+            $readings = $station->getReadings();
+        }catch(Exception $e){
+            $manager->getConnection()->rollBack();
+            return $this->json([
+                'message' => 'Bad Request',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        
+        return $this->json([
+            'message' => 'ok',
+            'list_readings' => $readings,
+            ], Response::HTTP_OK); 
+    }
 }
 
