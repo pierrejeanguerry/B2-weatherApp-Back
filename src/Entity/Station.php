@@ -17,6 +17,9 @@ class Station
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(nullable:false, type: Types::INTEGER)] //0 => eteint/deco, 1 => fonctionnel/connecté, 2 => defectueux
+    private ?int $state = null;
+
     #[ORM\Column(nullable:true, length: 255)]
     private ?string $name = null;
 
@@ -32,7 +35,6 @@ class Station
 
     #[ORM\Column(length: 17, unique:true)]
     private ?string $mac = null;
-    // d4:8a:fc:a7:76:fc
 
     public function getId(): ?int
     {
@@ -84,5 +86,17 @@ class Station
     public function getReadings(): Collection
     {
         return $this->readings;
+    }
+
+    public function getState(): ?int
+    {
+        return $this->state;
+    }
+
+    public function setState(?int $state): static
+    {
+        $this->state = $state;
+
+        return $this;
     }
 }

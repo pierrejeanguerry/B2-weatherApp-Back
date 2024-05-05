@@ -20,7 +20,7 @@ services:
     restart: always
     depends_on:
       - mariadb
-    image: piguerry/weatherstation-back:0.2
+    image: piguerry/weatherstation-back:0.3
     ports:
       - 8000:8000
     networks:

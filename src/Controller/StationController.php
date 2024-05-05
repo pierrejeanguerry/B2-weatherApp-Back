@@ -55,10 +55,11 @@ class StationController extends AbstractController
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
             $room = $roomRepo->findOneBy(['id' => $body['id_room']]);
-            $station = $repo->findOneBy(['token' => $body['token_station']]);
+            $station = $repo->findOneBy(['mac' => $body['mac_address']]);
             $station
             ->setRoom($room)
             ->setActivationDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
+            ->setState(1)
             ->setName($body['name_station']);
             $manager->persist($station);
             $manager->flush();
@@ -66,6 +67,45 @@ class StationController extends AbstractController
             return $this->json([
                 'message' => 'station created',
                 ], Response::HTTP_CREATED);
+        } 
+        catch (Exception $e){
+            $manager->getConnection()->rollBack();
+            return $this->json([
+                'message' => 'Bad Request',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/api/station/delete', name: 'station_delete', methods: ["POST"])]
+    public function delete(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, 
+    StationRepository $repo, RoomRepository $roomRepo): Response
+    {
+        $session = $request->getSession();
+        $token = $request->headers->get('token_user');
+        if (null === $user || !($token == $session->get("token_user"))) {
+          return $this->json([
+            'message' => 'missing credentials',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $manager->getConnection()->beginTransaction();
+
+        try{
+            $jsonbody = $request->getContent();
+            $body = json_decode($jsonbody, true);
+            $room = $roomRepo->findOneBy(['id' => $body['id_room']]);
+            $station = $repo->findOneBy(['mac' => $body['mac_address']]);
+            $station
+            ->setRoom(null)
+            ->setActivationDate(null)
+            ->setState(0)
+            ->setName(null);
+            $manager->persist($station);
+            $manager->flush();
+            $manager->getConnection()->commit();
+            return $this->json([
+                'message' => 'station deleted',
+                ], Response::HTTP_ACCEPTED);
         } 
         catch (Exception $e){
             $manager->getConnection()->rollBack();

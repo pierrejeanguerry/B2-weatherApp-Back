@@ -44,10 +44,12 @@ class AppFixtures extends Fixture
                     for ($k = 0; $k < 2; $k++) {
                         if ($k == 0 && $j == 0 && $i == 0){
                             $stations[$k] = new Station;
-                            $stations[$k]->setName($faker->country);
-                            $stations[$k]->setRoom($rooms[$j]);
-                            $stations[$k]->setActivationDate(\DateTime::createFromFormat('U.u', sprintf('%f', $t)));
-                            $stations[$k]->setMac("D4:8A:FC:A7:76:FC");
+                            $stations[$k]
+                            ->setName($faker->country)
+                            ->setRoom($rooms[$j])
+                            ->setActivationDate(\DateTime::createFromFormat('U.u', sprintf('%f', $t)))
+                            ->setState(1)
+                            ->setMac("D4:8A:FC:A7:76:FC");
 
                             $manager->persist($stations[$k]);
                         } else {

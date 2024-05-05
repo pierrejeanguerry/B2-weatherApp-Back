@@ -33,6 +33,17 @@ class ReadingController extends AbstractController
             $body = json_decode($jsonbody, true);
             $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
             $reading = new Reading();
+            if($body["temperature"] <= -50 || $body["temperature"] >= 50)
+                $body["temperature"] = null;
+            if ($body['altitude'] <= -1000 || $body['altitude'] >= 5000)
+                $body['altitude'] = null;
+            if ($body['pressure'] <= 900 || $body['pressure'] >= 1100)
+                $body['pressure'] = null;
+            if ($body['humidity'] < 0 || $body['humidity'] > 100)
+                $body['humidity'] = null;
+            if ($body['temperature'] == null || $body['altitude'] == null || $body['pressure'] == null || $body['humidity'] == null)
+                $station->setState(2);
+                
             $reading
             ->setTemperature($body['temperature'])
             ->setAltitude($body['altitude'])
