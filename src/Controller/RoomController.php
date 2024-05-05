@@ -2,12 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Building;
 use App\Entity\Room;
 use App\Entity\User;
 use App\Repository\BuildingRepository;
-use Doctrine\DBAL\Exception\ConstraintViolationException;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

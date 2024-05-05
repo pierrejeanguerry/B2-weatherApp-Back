@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Station;
 use App\Entity\User;
 use App\Repository\RoomRepository;
 use App\Repository\StationRepository;
