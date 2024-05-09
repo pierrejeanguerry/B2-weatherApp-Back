@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class StationController extends AbstractController
 {
-    #[Route('/api/station/list', name: 'station_list', methods: ['GET'])]
+    #[Route('/api/station/list', name: 'station_list', methods: ['POST'])]
     public function index(#[CurrentUser()] User $user, Request $request, RoomRepository $repo): Response
     {
         $session = $request->getSession();
