@@ -55,6 +55,10 @@ class StationController extends AbstractController
             $body = json_decode($jsonbody, true);
             $room = $roomRepo->findOneBy(['id' => $body['id_room']]);
             $station = $repo->findOneBy(['mac' => $body['mac_address']]);
+            if ($station->getState() != 0)
+                return $this->json([
+                    'message' => 'Station already used',
+                    ], Response::HTTP_UNAUTHORIZED);
             $station
             ->setRoom($room)
             ->setActivationDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
