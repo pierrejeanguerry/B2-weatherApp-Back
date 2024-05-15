@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Building;
 use App\Entity\User;
+use App\Repository\BuildingRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -57,6 +58,42 @@ class BuildingController extends AbstractController
             return $this->json([
                 'message' => 'building created',
                 ], Response::HTTP_CREATED);
+        } 
+        catch (UniqueConstraintViolationException $e){
+            $manager->getConnection()->rollBack();
+            return $this->json([
+                'message' => $e,
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/api/building/delete', name: 'building_delete', methods: ["POST"])]
+    public function delete(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, BuildingRepository $buildingRepo): Response
+    {
+        $session = $request->getSession();
+        $token = $request->headers->get('token_user');
+        if (null === $user || !($token == $session->get("token_user"))) {
+          return $this->json([
+            'message' => 'missing credentials',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $manager->getConnection()->beginTransaction();
+        try{
+            $jsonbody = $request->getContent();
+            $body = json_decode($jsonbody, true);
+            $building = $buildingRepo->findOneBy(['id' => $body['building_id']]);
+            if ($building->getRooms() != null)
+            {
+                return $this->json([
+                    'message' => 'building is not empty',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+            $manager->remove($building);
+            $manager->flush();
+            $manager->getConnection()->commit();
+            return $this->json([
+                'message' => 'building deleted',
+                ], Response::HTTP_OK);
         } 
         catch (UniqueConstraintViolationException $e){
             $manager->getConnection()->rollBack();
