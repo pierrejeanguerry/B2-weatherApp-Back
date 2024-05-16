@@ -86,7 +86,7 @@ class BuildingController extends AbstractController
             {
                 return $this->json([
                     'message' => 'building is not empty',
-                ], Response::HTTP_UNAUTHORIZED);
+                ], Response::HTTP_CONFLICT);
             }
             $manager->remove($building);
             $manager->flush();

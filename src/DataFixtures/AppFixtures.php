@@ -58,6 +58,7 @@ class AppFixtures extends Fixture
                             $stations[$k]->setRoom($rooms[$j]);
                             $stations[$k]->setActivationDate(\DateTime::createFromFormat('U.u', sprintf('%f', $t)));
                             $stations[$k]->setMac($faker->macAddress);
+                            $stations[$k]->setState(0);
 
                             $manager->persist($stations[$k]);
                         }

@@ -9,19 +9,18 @@ use App\Repository\RoomRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use App\Service\AuthManager;
 
 class RoomController extends AbstractController
 {
     #[Route('/api/room/list', name: 'room_list', methods: ['POST'])]
-    public function index(#[CurrentUser()] User $user, Request $request, BuildingRepository $repo): Response
+    public function index(#[CurrentUser()] User $user, Request $request, BuildingRepository $repo, AuthManager $auth): Response
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
+        if (!$auth->checkAuth($user, $request)) {
           return $this->json([
             'message' => 'missing credentials',
             ], Response::HTTP_UNAUTHORIZED);
@@ -37,15 +36,13 @@ class RoomController extends AbstractController
     }
 
     #[Route('/api/room/create', name: 'room_create', methods: ["POST"])]
-    public function create(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, BuildingRepository $repo): Response
+    public function create(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, BuildingRepository $repo, AuthManager $auth): Response
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-          return $this->json([
-            'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (!$auth->checkAuth($user, $request)) {
+            return $this->json([
+              'message' => 'missing credentials',
+              ], Response::HTTP_UNAUTHORIZED);
+          }
 
         $manager->getConnection()->beginTransaction();
 
@@ -72,15 +69,13 @@ class RoomController extends AbstractController
     }
 
     #[Route('/api/room/delete', name: 'room_delete', methods: ["POST"])]
-    public function delete(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, RoomRepository $repo): Response
+    public function delete(#[CurrentUser()] User $user,Request $request, EntityManagerInterface $manager, RoomRepository $repo, AuthManager $auth): Response
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-          return $this->json([
-            'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (!$auth->checkAuth($user, $request)) {
+            return $this->json([
+              'message' => 'missing credentials',
+              ], Response::HTTP_UNAUTHORIZED);
+          }
 
         $manager->getConnection()->beginTransaction();
 
@@ -91,7 +86,7 @@ class RoomController extends AbstractController
             if ($room->getStations() != null){
                 return $this->json([
                     'message' => 'room is not empty',
-                    ], Response::HTTP_UNAUTHORIZED);
+                    ], Response::HTTP_CONFLICT);
             }
             $repo->remove($room);
             $manager->flush();

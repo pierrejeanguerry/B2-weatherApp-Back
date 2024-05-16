@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\AuthManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,14 +29,12 @@ class LoginController extends AbstractController
     }
 
     #[Route('/api/login/check', name: 'check_login', methods: ['POST'])]
-    public function check(#[CurrentUser()] ?User $user, Request $request): Response
+    public function check(#[CurrentUser()] ?User $user, Request $request, AuthManager $auth): Response
       {
         
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
+        if (!$auth->checkAuth($user, $request)) {
           return $this->json([
-            'message' => 'missing or wrong credentials',
+            'message' => 'missing credentials',
             ], Response::HTTP_UNAUTHORIZED);
         }
         return $this->json([
@@ -44,16 +43,15 @@ class LoginController extends AbstractController
     }
 
     #[Route('/api/login/logout', name: 'logout_login', methods: ['POST'])]
-    public function logout(#[CurrentUser()] ?User $user, Request $request): Response
+    public function logout(#[CurrentUser()] ?User $user, Request $request, AuthManager $auth): Response
       {
         
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
+        if (!$auth->checkAuth($user, $request)) {
           return $this->json([
-            'message' => 'missing or wrong credentials',
+            'message' => 'missing credentials',
             ], Response::HTTP_UNAUTHORIZED);
         }
+        $session = $request->getSession();
         $session->invalidate();
         return $this->json([
           'message' => 'session destroyed',

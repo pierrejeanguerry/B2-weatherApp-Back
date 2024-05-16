@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\RoomRepository;
 use App\Repository\StationRepository;
+use App\Service\AuthManager;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -17,14 +18,12 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 class StationController extends AbstractController
 {
     #[Route('/api/station/list', name: 'station_list', methods: ['POST'])]
-    public function index(#[CurrentUser()] User $user, Request $request, RoomRepository $repo): Response
+    public function index(#[CurrentUser()] User $user, Request $request, RoomRepository $repo, AuthManager $auth): Response
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-          return $this->json([
-            'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
+        if (!$auth->checkAuth($user, $request)) {
+            return $this->json([
+              'message' => 'missing credentials',
+              ], Response::HTTP_UNAUTHORIZED);
         }
         $jsonbody = $request->getContent();
         $body = json_decode($jsonbody, true);
@@ -38,15 +37,13 @@ class StationController extends AbstractController
 
     #[Route('/api/station/create', name: 'station_create', methods: ["POST"])]
     public function create(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, 
-    StationRepository $repo, RoomRepository $roomRepo): Response
+    StationRepository $repo, RoomRepository $roomRepo, AuthManager $auth): Response
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-          return $this->json([
-            'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (!$auth->checkAuth($user, $request)) {
+            return $this->json([
+              'message' => 'missing credentials',
+              ], Response::HTTP_UNAUTHORIZED);
+          }
 
         $manager->getConnection()->beginTransaction();
 
@@ -81,15 +78,13 @@ class StationController extends AbstractController
 
     #[Route('/api/station/delete', name: 'station_delete', methods: ["POST"])]
     public function delete(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, 
-    StationRepository $repo, RoomRepository $roomRepo): Response
+    StationRepository $repo, RoomRepository $roomRepo, AuthManager $auth): Response
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-          return $this->json([
-            'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (!$auth->checkAuth($user, $request)) {
+            return $this->json([
+              'message' => 'missing credentials',
+              ], Response::HTTP_UNAUTHORIZED);
+          }
 
         $manager->getConnection()->beginTransaction();
 
