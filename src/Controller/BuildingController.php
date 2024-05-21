@@ -100,6 +100,7 @@ class BuildingController extends AbstractController
             return $this->json([
                 'message' => $e,
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            // ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
