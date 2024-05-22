@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
+use function Symfony\Component\Clock\now;
+
 class BuildingController extends AbstractController
 {
     #[Route('/api/building/list', name: 'building_list', methods: ['GET'])]
@@ -51,6 +53,7 @@ class BuildingController extends AbstractController
             $body = json_decode($jsonbody, true);
             $building = new Building;
             $building->setName($body['name_building'])
+            ->setDate(now())
             ->setUser($user);
             $manager->persist($building);
             $manager->flush();

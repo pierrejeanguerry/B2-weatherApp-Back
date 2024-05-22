@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\BuildingRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: BuildingRepository::class)]
 #[ApiResource()]
@@ -25,6 +26,9 @@ class Building
 
     #[ORM\OneToMany(targetEntity:"App\Entity\Room", mappedBy:"building", cascade:["remove"])]
     private $rooms;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $date = null;
 
     public function getId(): ?int
     {
@@ -53,5 +57,17 @@ class Building
     public function getRooms(): Collection
     {
         return $this->rooms;
+    }
+
+    public function getDate(): ?\DateTimeInterface
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTimeInterface $date): static
+    {
+        $this->date = $date;
+
+        return $this;
     }
 }
