@@ -56,18 +56,6 @@ class UserController extends AbstractController
         
     }
 
-    // #[Route('/api/user/id/get', name: 'get_id', methods: ['GET'])]
-    // public function getId(#[CurrentUser()] User $user, Request $request, AuthManager $auth): Response{
-    //     if (!$auth->checkAuth($user, $request)) {
-    //         return $this->json([
-    //           'message' => 'missing credentials',
-    //           ], Response::HTTP_UNAUTHORIZED);
-    //       }
-    //     return $this->json([
-    //         'username' => $user->getEmail()
-    //     ], Response::HTTP_OK);
-    // }
-
     #[Route('/api/user/id/update', name: 'update_id', methods: ['POST'])]
     public function updateId(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, UserPasswordHasherInterface $hasher, AuthManager $auth): Response{
         
@@ -117,7 +105,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/user/id/delete', name: 'delete_id', methods: ['POST'])]
-    public function deleteId(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, UserPasswordHasherInterface $hasher, AuthManager $auth): Response{
+    public function deleteId(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, AuthManager $auth): Response{
     
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
@@ -147,7 +135,7 @@ class UserController extends AbstractController
                 'message' => $e,
                 ], Response::HTTP_CONFLICT);
         }
-
-        
     }
+
+    
 }

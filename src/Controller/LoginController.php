@@ -23,8 +23,12 @@ class LoginController extends AbstractController
         $token = bin2hex(random_bytes(32));
         $session = $request->getSession();
         $session->set('token_user', $token);
+        $username = $user->getUsername();
+        $email = $user->getEmail();
         return $this->json([
             'token_user' => $token,
+            'username' => $username,
+            'email' => $email
         ]);
     }
 

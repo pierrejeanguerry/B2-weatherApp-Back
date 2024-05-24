@@ -98,20 +98,20 @@ class RoomController extends AbstractController
         try{
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
-            $room = $repo->findOneBy(['id' => $body['id_building']]);
-            if ($room->getStations() != null){
+            $room = $repo->findOneBy(['id' => $body['id_room']]);
+            if (!$room->getStations()->isEmpty()){
                 return $this->json([
                     'message' => 'room is not empty',
                     ], Response::HTTP_CONFLICT);
             }
-            $repo->remove($room);
+            $manager->remove($room);
             $manager->flush();
             $manager->getConnection()->commit();
             return $this->json([
                 'message' => 'room delete',
                 ], Response::HTTP_OK);
         } 
-        catch (Exception $e){
+        catch (UniqueConstraintViolationException $e){
             $manager->getConnection()->rollBack();
             return $this->json([
                 'message' => 'Bad Request',

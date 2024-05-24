@@ -85,7 +85,7 @@ class BuildingController extends AbstractController
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
             $building = $buildingRepo->findOneBy(['id' => $body['building_id']]);
-            if ($building->getRooms() != null)
+            if (!$building->getRooms()->isEmpty())
             {
                 return $this->json([
                     'message' => 'building is not empty',
