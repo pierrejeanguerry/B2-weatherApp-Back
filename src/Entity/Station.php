@@ -18,7 +18,7 @@ class Station
     private ?int $id = null;
 
     #[ORM\Column(nullable:false, type: Types::INTEGER)] //0 => eteint/deco, 1 => fonctionnel/connecté, 2 => defectueux
-    private ?int $state = null;
+    private ?int $state = 0;
 
     #[ORM\Column(nullable:true, length: 255)]
     private ?string $name = null;

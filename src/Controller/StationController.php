@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Station;
 use App\Entity\User;
 use App\Repository\RoomRepository;
 use App\Repository\StationRepository;
@@ -50,12 +51,21 @@ class StationController extends AbstractController
         try{
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
+          
             $room = $roomRepo->findOneBy(['id' => $body['id_room']]);
             $station = $repo->findOneBy(['mac' => $body['mac_address']]);
-            if ($station->getState() != 0)
+            
+            if ($station && $station->getState()) {
                 return $this->json([
                     'message' => 'Station already used',
-                    ], Response::HTTP_UNAUTHORIZED);
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
+            if (!$station) {
+                $station = new Station();
+                $station->setMac($body['mac_address']);
+            }
+    
             $station
             ->setRoom($room)
             ->setActivationDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
@@ -70,6 +80,7 @@ class StationController extends AbstractController
         } 
         catch (Exception $e){
             $manager->getConnection()->rollBack();
+            print_r($e->getMessage());
             return $this->json([
                 'message' => 'Bad Request',
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);

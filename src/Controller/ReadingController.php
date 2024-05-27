@@ -59,6 +59,7 @@ class ReadingController extends AbstractController
         }
         catch (Exception $e){
             $manager->getConnection()->rollBack();
+            // var_dump(print_r($e->getMessage()));
             return $this->json([
                 'message' => 'Bad Request',
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
