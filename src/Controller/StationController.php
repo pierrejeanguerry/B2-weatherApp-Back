@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Station;
 use App\Entity\User;
-use App\Repository\RoomRepository;
 use App\Repository\StationRepository;
 use App\Service\AuthManager;
 use DateTimeZone;
@@ -19,7 +18,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 class StationController extends AbstractController
 {
     #[Route('/api/station/list', name: 'station_list', methods: ['POST'])]
-    public function index(#[CurrentUser()] User $user, Request $request, RoomRepository $repo, AuthManager $auth): Response
+    public function index(#[CurrentUser()] User $user, Request $request, BuildingRepository $repo, AuthManager $auth): Response
     {
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
@@ -67,7 +66,7 @@ class StationController extends AbstractController
             }
     
             $station
-            ->setRoom($building)
+            ->setBuilding($building)
             ->setActivationDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
             ->setState(1)
             ->setName($body['name_station']);
@@ -89,7 +88,7 @@ class StationController extends AbstractController
 
     #[Route('/api/station/delete', name: 'station_delete', methods: ["POST"])]
     public function delete(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, 
-    StationRepository $repo, RoomRepository $buildingRepo, AuthManager $auth): Response
+    StationRepository $repo, BuildingRepository $buildingRepo, AuthManager $auth): Response
     {
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
@@ -105,7 +104,7 @@ class StationController extends AbstractController
             $building = $buildingRepo->findOneBy(['id' => $body['id_building']]);
             $station = $repo->findOneBy(['mac' => $body['mac_address']]);
             $station
-            ->setRoom(null)
+            ->setBuilding(null)
             ->setActivationDate(null)
             ->setState(0)
             ->setName(null);
