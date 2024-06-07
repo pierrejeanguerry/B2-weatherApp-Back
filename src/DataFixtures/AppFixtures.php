@@ -25,16 +25,17 @@ class AppFixtures extends Fixture
         $t = microtime(true);
 
         $user = new User();
-        $password = $this->hasher->hashPassword($user, 'pj');
+        $password = $this->hasher->hashPassword($user, '123456789Pj');
         $user->setUsername("pj")
         ->setPassword($password)
-        ->setEmail("pj@pj.fr")
+        ->setEmail("truc@truc.fr")
         ->setRoles($user->getRoles());
            $buildings = Array();
            for ($i = 0; $i < 4; $i++) {
                $buildings[$i] = new Building();
                $buildings[$i]->setName($faker->streetAddress);
                $buildings[$i]->setUser($user);
+                $buildings[$i]->setDate(\DateTime::createFromFormat('U.u', sprintf('%f', $t)));
                $rooms = Array();
                for ($j = 0; $j < 2; $j++) {
                     $rooms[$j] = new Room;
