@@ -24,8 +24,8 @@ class Building
     #[ORM\JoinColumn(nullable:false)]
     private $user;
 
-    #[ORM\OneToMany(targetEntity:"App\Entity\Room", mappedBy:"building", cascade:["remove"])]
-    private $rooms;
+    #[ORM\OneToMany(targetEntity:"App\Entity\Station", mappedBy:"building", cascade:["remove"])]
+    private $stations;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $date = null;
@@ -54,9 +54,9 @@ class Building
         return $this;
     }
 
-    public function getRooms(): Collection
+    public function getStations(): Collection
     {
-        return $this->rooms;
+        return $this->stations;
     }
 
     public function getDate(): ?\DateTimeInterface

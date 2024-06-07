@@ -26,9 +26,9 @@ class Station
     #[ORM\Column(nullable:true, type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $activation_date = null;
 
-    #[ORM\ManyToOne(targetEntity:"App\Entity\Room", inversedBy:"stations")]
+    #[ORM\ManyToOne(targetEntity:"App\Entity\Building", inversedBy:"stations")]
     #[ORM\JoinColumn(nullable:true)]
-    private $room;
+    private $building;
 
     #[ORM\OneToMany(targetEntity:"App\Entity\Reading", mappedBy:"station", cascade:["remove"])]
     private $readings;
@@ -65,9 +65,9 @@ class Station
         return $this;
     }
 
-    public function setRoom(?Room $room): self
+    public function setBuilding(?Building $building): self
     {
-        $this->room = $room;
+        $this->building = $building;
         return $this;
     }
 

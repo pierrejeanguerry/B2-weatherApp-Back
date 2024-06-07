@@ -28,8 +28,8 @@ class StationController extends AbstractController
         }
         $jsonbody = $request->getContent();
         $body = json_decode($jsonbody, true);
-        $room = $repo->findOneBy(['id' => $body["room_id"]]);
-        $stations = $room->getStations();
+        $building = $repo->findOneBy(['id' => $body["building_id"]]);
+        $stations = $building->getStations();
         return $this->json([
             'message' => 'ok',
             'list_station' => $stations,
@@ -38,7 +38,7 @@ class StationController extends AbstractController
 
     #[Route('/api/station/create', name: 'station_create', methods: ["POST"])]
     public function create(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, 
-    StationRepository $repo, RoomRepository $roomRepo, AuthManager $auth): Response
+    StationRepository $repo, BuildingRepository $buildingRepo, AuthManager $auth): Response
     {
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
@@ -52,7 +52,7 @@ class StationController extends AbstractController
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
           
-            $room = $roomRepo->findOneBy(['id' => $body['id_room']]);
+            $building = $buildingRepo->findOneBy(['id' => $body['id_building']]);
             $station = $repo->findOneBy(['mac' => $body['mac_address']]);
             
             if ($station && $station->getState()) {
@@ -67,7 +67,7 @@ class StationController extends AbstractController
             }
     
             $station
-            ->setRoom($room)
+            ->setRoom($building)
             ->setActivationDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
             ->setState(1)
             ->setName($body['name_station']);
@@ -89,7 +89,7 @@ class StationController extends AbstractController
 
     #[Route('/api/station/delete', name: 'station_delete', methods: ["POST"])]
     public function delete(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, 
-    StationRepository $repo, RoomRepository $roomRepo, AuthManager $auth): Response
+    StationRepository $repo, RoomRepository $buildingRepo, AuthManager $auth): Response
     {
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
@@ -102,7 +102,7 @@ class StationController extends AbstractController
         try{
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
-            $room = $roomRepo->findOneBy(['id' => $body['id_room']]);
+            $building = $buildingRepo->findOneBy(['id' => $body['id_building']]);
             $station = $repo->findOneBy(['mac' => $body['mac_address']]);
             $station
             ->setRoom(null)
