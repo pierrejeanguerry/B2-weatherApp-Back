@@ -24,18 +24,6 @@ class ReadingRepository extends ServiceEntityRepository
     public function findRecentReadingsByStation(int $stationId, int $days): array
     {
         $qb = $this->createQueryBuilder('r')
-            ->select('DATE_FORMAT(r.date, \'%Y-%m-%d %H:00:00\') AS hour', 'AVG(r.readingValue) AS avgReading')
-            ->andWhere('r.station = :stationId')
-            ->andWhere('r.date >= :date')
-            ->setParameter('stationId', $stationId)
-            ->setParameter('date', new \DateTime("-$days days"))
-            ->groupBy('hour')
-            ->orderBy('hour', 'ASC');
-        return $qb->getQuery()->getResult();
-    }
-    public function findRecentReadingsByStationHour(int $stationId, int $days): array
-    {
-        $qb = $this->createQueryBuilder('r')
             ->andWhere('r.station = :stationId')
             ->andWhere('r.date >= :date')
             ->setParameter('stationId', $stationId)
@@ -44,31 +32,54 @@ class ReadingRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+    public function findRecentReadingsByStationHour(int $stationId, int $days): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->select(
+                'DATE_FORMAT(r.date, \'%Y-%m-%d %H:00:00\') AS hour',
+                'AVG(r.temperature) AS avgTemperature',
+                'AVG(r.pressure) AS avgPressure',
+                'AVG(r.altitude) AS avgAltitude',
+                'AVG(r.humidity) AS avgHumidity'
+            )
+            ->andWhere('r.station = :stationId')
+            ->andWhere('r.date >= :date')
+            ->setParameter('stationId', $stationId)
+            ->setParameter('date', new \DateTime("-$days days"))
+            ->groupBy('hour')
+            ->orderBy('hour', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
 
     public function findRecentReadingsByStationDay(int $stationId, int $days): array
     {
         $qb = $this->createQueryBuilder('r')
-            ->select('DATE(r.date) as day', 'AVG(r.reading) as average_reading')
+            ->select(
+                'DATE(r.date) AS day',
+                'AVG(r.temperature) AS avgTemperature',
+                'AVG(r.pressure) AS avgPressure',
+                'AVG(r.altitude) AS avgAltitude',
+                'AVG(r.humidity) AS avgHumidity'
+            )
             ->andWhere('r.station = :stationId')
             ->andWhere('r.date >= :date')
             ->setParameter('stationId', $stationId)
             ->setParameter('date', new \DateTime("-$days days"))
             ->groupBy('day')
             ->orderBy('day', 'ASC');
-
         return $qb->getQuery()->getResult();
     }
     public function findRecentReadingsByStationMonth(int $stationId, int $days): array
     {
         $qb = $this->createQueryBuilder('r')
-            ->select('MONTH(r.date) AS month, YEAR(r.date) AS year, AVG(r.readingValue) AS average')
+            ->select('DATE_FORMAT(r.date, \'%Y-%m\') AS month', 'AVG(r.temperature) AS avgTemperature', 'AVG(r.pressure) AS avgPressure', 'AVG(r.altitude) AS avgAltitude', 'AVG(r.humidity) AS avgHumidity')
             ->andWhere('r.station = :stationId')
             ->andWhere('r.date >= :date')
             ->setParameter('stationId', $stationId)
             ->setParameter('date', new \DateTime("-$days days"))
-            ->groupBy('month, year')
-            ->orderBy('year', 'DESC')
-            ->addOrderBy('month', 'DESC');
+            ->groupBy('month')
+            ->orderBy('month', 'ASC');
         return $qb->getQuery()->getResult();
     }
     //    /**
