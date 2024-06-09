@@ -79,7 +79,12 @@ class ReadingController extends AbstractController
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
             $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
-            $readings = $repo->findRecentReadingsByStation($station->getId(), $days);
+            if($days == 1)
+            $readings = $repo->findRecentReadingsByStationHour($station->getId(), $days);
+            else if ($days == 7 || $days == 30)
+            $readings = $repo->findRecentReadingsByStationDay($station->getId(), $days);
+            else if ($days == 365)
+            $readings = $repo->findRecentReadingsByStationMonth($station->getId(), $days);
         } catch (Exception $e) {
             return $this->json([
                 'message' => 'Bad Request',
