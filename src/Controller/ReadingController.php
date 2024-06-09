@@ -61,11 +61,10 @@ class ReadingController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
-    #[Route('/api/reading/{days}/list', name: 'list_reading')]
+    #[Route('/api/reading/{days}/list', name: 'days_list_reading')]
     public function list(
         #[CurrentUser()] User $user,
         Request $request,
-        EntityManagerInterface $manager,
         StationRepository $stationRepo,
         AuthManager $auth,
         int $days,
@@ -82,7 +81,6 @@ class ReadingController extends AbstractController
             $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
             $readings = $repo->findRecentReadingsByStation($station->getId(), $days);
         } catch (Exception $e) {
-            $manager->getConnection()->rollBack();
             return $this->json([
                 'message' => 'Bad Request',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -98,7 +96,6 @@ class ReadingController extends AbstractController
     public function days_list(
         #[CurrentUser()] User $user,
         Request $request,
-        EntityManagerInterface $manager,
         StationRepository $stationRepo,
         AuthManager $auth
     ): Response {
@@ -113,7 +110,6 @@ class ReadingController extends AbstractController
             $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
             $readings = $station->getReadings();
         } catch (Exception $e) {
-            $manager->getConnection()->rollBack();
             return $this->json([
                 'message' => 'Bad Request',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);

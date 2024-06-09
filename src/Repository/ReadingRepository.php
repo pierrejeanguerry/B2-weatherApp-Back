@@ -28,7 +28,7 @@ class ReadingRepository extends ServiceEntityRepository
             ->andWhere('r.date >= :date')
             ->setParameter('stationId', $stationId)
             ->setParameter('date', new \DateTime("-$days days"))
-            ->orderBy('r.createdAt', 'DESC');
+            ->orderBy('r.date', 'DESC');
 
         return $qb->getQuery()->getResult();
     }
