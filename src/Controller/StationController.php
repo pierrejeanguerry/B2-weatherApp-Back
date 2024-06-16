@@ -74,7 +74,7 @@ class StationController extends AbstractController
             $station
                 ->setBuilding($building)
                 ->setActivationDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
-                ->setState(1)
+                ->setState(0)
                 ->setName($body['name_station']);
             $manager->persist($station);
             $manager->flush();

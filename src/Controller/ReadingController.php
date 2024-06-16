@@ -29,6 +29,7 @@ class ReadingController extends AbstractController
             $body = json_decode($jsonbody, true);
             $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
             $reading = new Reading();
+            $station->setState(1);
             if ($body["temperature"] <= -50 || $body["temperature"] >= 50)
                 $body["temperature"] = null;
             if ($body['altitude'] <= -1000 || $body['altitude'] >= 5000)
@@ -48,6 +49,7 @@ class ReadingController extends AbstractController
                 ->setDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
                 ->setStation($station);
             $manager->persist($reading);
+            $manager->persist($station);
             $manager->flush();
             $manager->getConnection()->commit();
         } catch (Exception $e) {
