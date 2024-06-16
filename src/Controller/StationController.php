@@ -45,7 +45,7 @@ class StationController extends AbstractController
                     $currentTime->sub(new \DateInterval('PT1M'));
                    // $currentTime->sub(new \DateInterval('PT1H'));
 
-                    if ($readingTime > $currentTime) {
+                    if ($readingTime < $currentTime) {
                         $station->setState(0);
                         $manager->persist($station);
                         $manager->flush();
