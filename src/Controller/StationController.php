@@ -149,19 +149,21 @@ class StationController extends AbstractController
         }
 
         $manager->getConnection()->beginTransaction();
+
         try {
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
             $station = $repo->findOneBy(['mac' => $body["mac_address"]]);
             if ($body['new_name'] != "")
                 $station->setName($body['new_name']);
-            if ($body['new_building_id']) {
-                $building = $building_repo->findOneBy(["id" => $body["new_building_id"]]);
+            if ($body['newBuilding_id'] !== 0) {
+                $building = $building_repo->findOneBy(["id" => $body["newBuilding_id"]]);
                 if ($building)
                     $station->setBuilding($building);
             }
             $manager->persist($station);
             $manager->flush();
+            $manager->getConnection()->commit();
             return $this->json([
                 'message' => 'station updated'
             ], Response::HTTP_OK);
