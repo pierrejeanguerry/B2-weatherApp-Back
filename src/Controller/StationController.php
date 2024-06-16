@@ -39,7 +39,7 @@ class StationController extends AbstractController
                 $id = $station->getId();
                 $readings = $readingRepo->findRecentReadingsByStation($id, 1);
                 if (!empty($readings)) {
-                    $latestReading = $readings[0];
+                    $latestReading = end($readings);
                     $readingTime = $latestReading->getDate();
                     $currentTime = new \DateTime();
                     $currentTime->sub(new \DateInterval('PT1M'));
