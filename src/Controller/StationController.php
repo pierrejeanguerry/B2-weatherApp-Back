@@ -36,15 +36,13 @@ class StationController extends AbstractController
         $stations = $building->getStations();
         try {
             foreach ($stations as $station) {
-                $id = $station->getId();
-                $readings = $readingRepo->findRecentReadingsByStation($id, 1);
+                $readings = $readingRepo->findBy(['station' => $station]);
                 if (!empty($readings)) {
                     $latestReading = end($readings);
                     $readingTime = $latestReading->getDate();
-                    $currentTime = new \DateTime();
-                    $currentTime->sub(new \DateInterval('PT1M'));
-                   // $currentTime->sub(new \DateInterval('PT1H'));
-
+                    $currentTime = new \DateTime('now', new DateTimeZone('Europe/Paris'));
+                    $currentTime->sub(new \DateInterval('PT1H'));
+                    $readingTime->setTimeZone(new DateTimeZone('Europe/Paris'));
                     if ($readingTime < $currentTime) {
                         $station->setState(0);
                         $manager->persist($station);

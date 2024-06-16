@@ -46,7 +46,8 @@ class ReadingController extends AbstractController
                 ->setAltitude($body['altitude'])
                 ->setPressure($body['pressure'])
                 ->setHumidity($body['humidity'])
-                ->setDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
+                //->setDate(new \DateTime('now', new DateTimeZone('Europe/Paris')))
+                ->setDate(new \DateTime())
                 ->setStation($station);
             $manager->persist($reading);
             $manager->persist($station);
