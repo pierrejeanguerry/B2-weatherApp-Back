@@ -6,6 +6,7 @@ use App\Entity\Station;
 use App\Entity\User;
 use App\Repository\StationRepository;
 use App\Repository\BuildingRepository;
+use App\Repository\ReadingRepository;
 use App\Service\AuthManager;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,17 +20,45 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 class StationController extends AbstractController
 {
     #[Route('/api/station/list', name: 'station_list', methods: ['POST'])]
-    public function index(#[CurrentUser()] User $user, Request $request, BuildingRepository $repo, AuthManager $auth): Response
+    public function index(#[CurrentUser()] User $user, Request $request, BuildingRepository $repo, ReadingRepository $readingRepo, AuthManager $auth, EntityManagerInterface $manager): Response
     {
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
                 'message' => 'missing credentials',
             ], Response::HTTP_UNAUTHORIZED);
         }
+
+        $manager->getConnection()->beginTransaction();
+
         $jsonbody = $request->getContent();
         $body = json_decode($jsonbody, true);
         $building = $repo->findOneBy(['id' => $body["building_id"]]);
         $stations = $building->getStations();
+        try {
+            foreach ($stations as $station) {
+                $id = $station->getId();
+                $readings = $readingRepo->findRecentReadingsByStation($id, 1);
+                if (!empty($readings)) {
+                    $latestReading = $readings[0];
+                    $readingTime = $latestReading->getDate();
+                    $currentTime = new \DateTime();
+                    $currentTime->sub(new \DateInterval('PT1M'));
+                   // $currentTime->sub(new \DateInterval('PT1H'));
+
+                    if ($readingTime > $currentTime) {
+                        $station->setState(0);
+                        $manager->persist($station);
+                        $manager->flush();
+                    }
+                }
+            }
+            $manager->getConnection()->commit();
+        } catch (Exception $e) {
+            $manager->getConnection()->rollBack();
+            return $this->json([
+                'message' => $e,
+            ], Response::HTTP_CONFLICT);
+        }
         return $this->json([
             'message' => 'ok',
             'list_station' => $stations,
