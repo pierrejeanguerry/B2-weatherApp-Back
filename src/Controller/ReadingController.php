@@ -10,6 +10,7 @@ use App\Service\AuthManager;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use PhpParser\Node\Stmt\Foreach_;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -80,7 +81,6 @@ class ReadingController extends AbstractController
             $body = json_decode($jsonbody, true);
             $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
             $readings = $repo->findRecentReadingsByStation($station->getId(), $days);
-            print_r($readings);
         } catch (Exception $e) {
             return $this->json([
                 'message' => 'Bad Request',
