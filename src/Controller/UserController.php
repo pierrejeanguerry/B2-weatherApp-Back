@@ -1,10 +1,9 @@
-<?php 
+<?php
 
 namespace App\Controller;
 
 use App\Entity\User;
 use App\Service\AuthManager;
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,62 +15,22 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class UserController extends AbstractController
 {
-    #[Route('/api/user/get', name: 'get_user', methods: ['GET'])]
-    public function index(#[CurrentUser()] User $user, Request $request, AuthManager $auth): Response
+    #[Route('/api/users', name: 'register', methods: ['POST'])]
+    public function register(Request $request, EntityManagerInterface $manager, UserPasswordHasherInterface $hasher): Response
     {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-              'message' => 'missing credentials',
-              ], Response::HTTP_UNAUTHORIZED);
-        }
-        return $this->json([
-            'username' => $user->getUsername(),
-            'email' => $user->getEmail(),
-        ], Response::HTTP_OK);
-    }
-    
-    #[Route('/api/user/username/update', name: 'update_username', methods: ['POST'])]
-    public function updateUsername(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, AuthManager $auth): Response
-    {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-              'message' => 'missing credentials',
-              ], Response::HTTP_UNAUTHORIZED);
-        }
-        try {
+        $manager->getConnection()->beginTransaction();
+
+        try{
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
-            $user->setUsername($body['username']);
-            $manager->persist($user);
-            $manager->flush();
-            return $this->json([
-                'message' => 'username changed'
-            ], Response::HTTP_OK);
-        }catch(Exception $e) {
-            $manager->getConnection()->rollBack();
-            return $this->json([
-                'message' => $e,
-                ], Response::HTTP_CONFLICT);
-            }
-        
-    }
+            $user = new User;
+            $user->setEmail($body['email'])
+            ->setUsername($body['username'])
+            ->setRoles($user->getRoles());
 
-    #[Route('/api/user/id/update', name: 'update_id', methods: ['POST'])]
-    public function updateId(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, UserPasswordHasherInterface $hasher, AuthManager $auth): Response{
-        
-        $jsonbody = $request->getContent();
-        $body = json_decode($jsonbody, true);
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-              'message' => 'missing credentials',
-              ], Response::HTTP_UNAUTHORIZED);
-          }
-        $manager->getConnection()->beginTransaction();
-        try {
             $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,20}$/';
             $emailPattern = '/^[^\s@]+@[^\s@]+\.[^\s@]+$/';
-            
-            if (!$body['password'] || !preg_match($pattern, $body['password'])){
+            if (!preg_match($pattern, $body['password'])){
                 return $this->json([
                     'message' => 'Password problem',
                     ], Response::HTTP_BAD_REQUEST);
@@ -81,43 +40,115 @@ class UserController extends AbstractController
                     'message' => 'Email problem',
                     ], Response::HTTP_BAD_REQUEST);
             }
-            $user->setEmail($body['email']);
             $password = $hasher->hashPassword($user, $body['password']);
             $user->setPassword($password);
             $manager->persist($user);
             $manager->flush();
             $manager->getConnection()->commit();
             return $this->json([
-                'message' => 'Id updated',
-                ], Response::HTTP_OK);
+                'message' => 'User created',
+                ], Response::HTTP_CREATED);
 
-        } catch(UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e){
+            $manager->getConnection()->rollBack();
+            return $this->json([
+                'message' => 'User already exist',
+                ], Response::HTTP_CONFLICT);
+        }
+    }
+    #[Route('/api/users/{id}', name: 'get_user', methods: ['GET'])]
+    public function index(
+        #[CurrentUser()] User $user,
+        Request $request,
+        AuthManager $auth,
+        int $id
+    ): Response {
+        if (!$auth->checkAuth($user, $request)) {
+            return $this->json([
+                'message' => 'missing credentials',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        return $this->json([
+            'username' => $user->getUsername(),
+            'email' => $user->getEmail(),
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/api/users/{id}', name: 'update_username', methods: ['PATCH'])]
+    public function updateUsername(
+        #[CurrentUser()] User $user,
+        Request $request,
+        EntityManagerInterface $manager,
+        AuthManager $auth,
+        UserPasswordHasherInterface $hasher,
+        int $id
+    ): Response {
+        if (!$auth->checkAuth($user, $request)) {
+            return $this->json([
+                'message' => 'missing credentials',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        try {
+            $jsonbody = $request->getContent();
+            $body = json_decode($jsonbody, true);
+            $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,20}$/';
+            $emailPattern = '/^[^\s@]+@[^\s@]+\.[^\s@]+$/';
+
+            if ($body['password']) {
+                if (!preg_match($pattern, $body['password'])) {
+                    return $this->json([
+                        'message' => 'Password problem',
+                    ], Response::HTTP_BAD_REQUEST);
+                } else {
+                    $password = $hasher->hashPassword($user, $body['password']);
+                    $user->setPassword($password);
+                }
+            }
+            if ($body['email'])
+                if (!preg_match($emailPattern, $body['email']))
+                    return $this->json([
+                        'message' => 'Email problem',
+                    ], Response::HTTP_BAD_REQUEST);
+                else {
+                    $user->setEmail($body['email']);
+                }
+            if ($body['username']) {
+                $user->setUsername($body['username']);
+            }
+            $manager->persist($user);
+            $manager->flush();
+            $manager->getConnection()->commit();
+            return $this->json([
+                'message' => 'user updated'
+            ], Response::HTTP_OK);
+        } catch (Exception $e) {
             $manager->getConnection()->rollBack();
             return $this->json([
                 'message' => $e,
-                ], Response::HTTP_CONFLICT);
+            ], Response::HTTP_CONFLICT);
         }
-        // } catch (Exception $e){
-        //     return $this->json([
-        //         'message' => $e,
-        //         ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        // }
     }
 
-    #[Route('/api/user/id/delete', name: 'delete_id', methods: ['POST'])]
-    public function deleteId(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager, AuthManager $auth): Response{
-    
+    #[Route('/api/users/{id}', name: 'delete_user', methods: ['DELETE'])]
+    public function deleteId(
+        #[CurrentUser()] User $user,
+        Request $request,
+        EntityManagerInterface $manager,
+        AuthManager $auth,
+        int $id
+    ): Response {
+
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
-              'message' => 'missing credentials',
-              ], Response::HTTP_UNAUTHORIZED);
+                'message' => 'missing credentials',
+            ], Response::HTTP_UNAUTHORIZED);
         }
         $jsonbody = $request->getContent();
         $body = json_decode($jsonbody, true);
-        if (!password_verify($body['password'], $user->getPassword())){
+        if (!password_verify($body['password'], $user->getPassword())) {
             return $this->json([
                 'message' => 'wrong credentials',
-                ], Response::HTTP_UNAUTHORIZED);
+            ], Response::HTTP_UNAUTHORIZED);
         }
         $manager->getConnection()->beginTransaction();
         try {
@@ -133,9 +164,8 @@ class UserController extends AbstractController
             $manager->getConnection()->rollBack();
             return $this->json([
                 'message' => $e,
-                ], Response::HTTP_CONFLICT);
+            ], Response::HTTP_CONFLICT);
         }
     }
-
-    
 }
+

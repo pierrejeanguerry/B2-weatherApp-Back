@@ -25,10 +25,12 @@ class LoginController extends AbstractController
         $session->set('token_user', $token);
         $username = $user->getUsername();
         $email = $user->getEmail();
+        $id = $user->getId();
         return $this->json([
             'token_user' => $token,
             'username' => $username,
-            'email' => $email
+            'email' => $email,
+            'id' => $id
         ]);
     }
 

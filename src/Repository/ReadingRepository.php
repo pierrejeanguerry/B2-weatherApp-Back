@@ -21,7 +21,7 @@ class ReadingRepository extends ServiceEntityRepository
         parent::__construct($registry, Reading::class);
     }
 
-    public function findRecentReadingsByStation(int $stationId, int $days): array
+    public function findRecentReadingsByDay(int $stationId, int $days): array
     {
         $qb = $this->createQueryBuilder('r')
             ->andWhere('r.station = :stationId')

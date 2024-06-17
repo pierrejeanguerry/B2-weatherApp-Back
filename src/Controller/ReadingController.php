@@ -19,7 +19,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class ReadingController extends AbstractController
 {
-    #[Route('/api/reading/send', name: 'send_reading')]
+    #[Route('/api/readings', name: 'send_reading', methods: ["POST"])]
     public function send(Request $request, EntityManagerInterface $manager, StationRepository $stationRepo): Response
     {
         $manager->getConnection()->beginTransaction();
@@ -65,14 +65,15 @@ class ReadingController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
-    #[Route('/api/reading/{days}/list', name: 'days_list_reading')]
+    #[Route('/api/readings/{id}', name: 'days_list_reading', methods: ["GET"])]
     public function list(
         #[CurrentUser()] User $user,
         Request $request,
         StationRepository $stationRepo,
         AuthManager $auth,
         int $days,
-        ReadingRepository $repo
+        ReadingRepository $repo,
+        int $id
     ): Response {
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
@@ -82,37 +83,11 @@ class ReadingController extends AbstractController
         try {
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
-            $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
-            $readings = $repo->findRecentReadingsByStation($station->getId(), $days);
-        } catch (Exception $e) {
-            return $this->json([
-                'message' => 'Bad Request',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-
-        return $this->json([
-            'message' => 'ok',
-            'list_readings' => $readings,
-        ], Response::HTTP_OK);
-    }
-
-    #[Route('/api/reading/list', name: 'list_reading')]
-    public function days_list(
-        #[CurrentUser()] User $user,
-        Request $request,
-        StationRepository $stationRepo,
-        AuthManager $auth
-    ): Response {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
-        try {
-            $jsonbody = $request->getContent();
-            $body = json_decode($jsonbody, true);
-            $station = $stationRepo->findOneBy(["mac" => $body['mac_address']]);
-            $readings = $station->getReadings();
+            $station = $stationRepo->findOneBy(["mac" => $id]);
+            if ($body["days"] === 0)
+                $readings = $repo->find(["id" => $station->getId()]);
+            else
+                $readings = $repo->findRecentReadingsByDay($station->getId(), $body["days"]);
         } catch (Exception $e) {
             return $this->json([
                 'message' => 'Bad Request',

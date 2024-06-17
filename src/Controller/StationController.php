@@ -19,9 +19,16 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class StationController extends AbstractController
 {
-    #[Route('/api/station/list', name: 'station_list', methods: ['POST'])]
-    public function index(#[CurrentUser()] User $user, Request $request, BuildingRepository $repo, ReadingRepository $readingRepo, AuthManager $auth, EntityManagerInterface $manager): Response
-    {
+    #[Route('/api/stations/{id}', name: 'station_list', methods: ['GET'])]
+    public function index(
+        #[CurrentUser()] User $user,
+        Request $request,
+        BuildingRepository $repo,
+        ReadingRepository $readingRepo,
+        AuthManager $auth,
+        EntityManagerInterface $manager,
+        int $id
+    ): Response {
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
                 'message' => 'missing credentials',
@@ -30,13 +37,16 @@ class StationController extends AbstractController
 
         $manager->getConnection()->beginTransaction();
 
-        $jsonbody = $request->getContent();
-        $body = json_decode($jsonbody, true);
-        $building = $repo->findOneBy(['id' => $body["building_id"]]);
+        $building = $repo->findOneBy(['id' => $id]);
         $stations = $building->getStations();
         try {
             foreach ($stations as $station) {
+<<<<<<< Updated upstream
                 $readings = $readingRepo->findBy(['station' => $station]);
+=======
+                $id = $station->getId();
+                $readings = $readingRepo->findBy(["id" => $id]);
+>>>>>>> Stashed changes
                 if (!empty($readings)) {
                     $latestReading = end($readings);
                     $readingTime = $latestReading->getDate();
@@ -63,7 +73,7 @@ class StationController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/api/station/create', name: 'station_create', methods: ["POST"])]
+    #[Route('/api/stations', name: 'station_create', methods: ["POST"])]
     public function create(
         #[CurrentUser()] User $user,
         Request $request,
@@ -118,7 +128,7 @@ class StationController extends AbstractController
         }
     }
 
-    #[Route('/api/station/delete', name: 'station_delete', methods: ["POST"])]
+    #[Route('/api/stations', name: 'station_delete', methods: ["DELETE"])]
     public function delete(
         #[CurrentUser()] User $user,
         Request $request,
@@ -159,14 +169,15 @@ class StationController extends AbstractController
         }
     }
 
-    #[Route('api/station/update', name: 'station_update', methods: ["POST"])]
+    #[Route('api/stations/{id}', name: 'station_update', methods: ["PATCH"])]
     public function update(
         #[CurrentUser()] User $user,
         Request $request,
         EntityManagerInterface $manager,
         AuthManager $auth,
         StationRepository $repo,
-        BuildingRepository $building_repo
+        BuildingRepository $building_repo,
+        int $id
     ) {
 
         if (!$auth->checkAuth($user, $request)) {
@@ -180,7 +191,7 @@ class StationController extends AbstractController
         try {
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
-            $station = $repo->findOneBy(['mac' => $body["mac_address"]]);
+            $station = $repo->findOneBy(['id' => $id]);
             if ($body['new_name'] != "")
                 $station->setName($body['new_name']);
             if ($body['newBuilding_id'] !== 0) {
