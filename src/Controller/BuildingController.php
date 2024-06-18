@@ -53,7 +53,6 @@ class BuildingController extends AbstractController
             $body = json_decode($jsonbody, true);
             $building = new Building;
             $building->setName($body['name_building'])
-                ->setDate(now())
                 ->setUser($user);
             $manager->persist($building);
             $manager->flush();

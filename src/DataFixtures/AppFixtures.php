@@ -35,7 +35,6 @@ class AppFixtures extends Fixture
             $buildings[$i] = new Building();
             $buildings[$i]->setName($faker->streetAddress);
             $buildings[$i]->setUser($user);
-            $buildings[$i]->setDate(\DateTime::createFromFormat('U.u', sprintf('%f', $t)));
             for ($k = 0; $k < 2; $k++) {
                 if ($k == 0 && $i == 0){
                     $stations[$k] = new Station;

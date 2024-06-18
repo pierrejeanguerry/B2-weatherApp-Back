@@ -36,17 +36,13 @@ class StationController extends AbstractController
         }
 
         $manager->getConnection()->beginTransaction();
-
-        $building = $repo->findOneBy(['id' => $id]);
-        $stations = $building->getStations();
         try {
+
+            $building = $repo->findOneBy(['id' => $id]);
+            $stations = $building->getStations();
             foreach ($stations as $station) {
-<<<<<<< Updated upstream
-                $readings = $readingRepo->findBy(['station' => $station]);
-=======
                 $id = $station->getId();
                 $readings = $readingRepo->findBy(["id" => $id]);
->>>>>>> Stashed changes
                 if (!empty($readings)) {
                     $latestReading = end($readings);
                     $readingTime = $latestReading->getDate();
@@ -82,6 +78,7 @@ class StationController extends AbstractController
         BuildingRepository $buildingRepo,
         AuthManager $auth
     ): Response {
+
         if (!$auth->checkAuth($user, $request)) {
             return $this->json([
                 'message' => 'missing credentials',
@@ -134,7 +131,6 @@ class StationController extends AbstractController
         Request $request,
         EntityManagerInterface $manager,
         StationRepository $repo,
-        BuildingRepository $buildingRepo,
         AuthManager $auth
     ): Response {
         if (!$auth->checkAuth($user, $request)) {
@@ -148,7 +144,6 @@ class StationController extends AbstractController
         try {
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
-            $building = $buildingRepo->findOneBy(['id' => $body['id_building']]);
             $station = $repo->findOneBy(['mac' => $body['mac_address']]);
             $station
                 ->setBuilding(null)

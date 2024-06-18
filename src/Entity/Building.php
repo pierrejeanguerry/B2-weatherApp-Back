@@ -36,9 +36,6 @@ class Building
     #[ORM\OneToMany(targetEntity: "App\Entity\Station", mappedBy: "building", cascade: ["remove"])]
     private $stations;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $date = null;
-
     public function getId(): ?int
     {
         return $this->id;
@@ -66,17 +63,5 @@ class Building
     public function getStations(): Collection
     {
         return $this->stations;
-    }
-
-    public function getDate(): ?\DateTimeInterface
-    {
-        return $this->date;
-    }
-
-    public function setDate(\DateTimeInterface $date): static
-    {
-        $this->date = $date;
-
-        return $this;
     }
 }
