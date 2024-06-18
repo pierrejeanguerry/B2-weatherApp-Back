@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Entity\Building;
 use App\Entity\User;
 use App\Repository\BuildingRepository;
+use App\Service\AuthManager;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,15 +20,14 @@ use function Symfony\Component\Clock\now;
 class BuildingController extends AbstractController
 {
     #[Route('/api/buildings', name: 'building_list', methods: ['GET'], priority: 2)]
-    public function index(#[CurrentUser()] User $user, Request $request): Response
+    public function index(
+        #[CurrentUser()] User $user, 
+        Request $request,
+        AuthManager $auth
+        ): Response
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
 
         $buildings = $user->getBuildings();
         return $this->json([
@@ -36,15 +37,15 @@ class BuildingController extends AbstractController
     }
 
     #[Route('/api/buildings', name: 'building_create', methods: ["POST"], priority: 2)]
-    public function create(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager): Response
+    public function create(
+        #[CurrentUser()] User $user, 
+        Request $request, 
+        EntityManagerInterface $manager,
+        AuthManager $auth
+    ): Response
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
 
         $manager->getConnection()->beginTransaction();
 
@@ -74,22 +75,19 @@ class BuildingController extends AbstractController
         Request $request,
         EntityManagerInterface $manager,
         BuildingRepository $buildingRepo,
-        int $id
-    ): Response {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        int $id,
+        AuthManager $auth
+    ): Response
+    {
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         $manager->getConnection()->beginTransaction();
         try {
             $building = $buildingRepo->findOneBy(['id' => $id]);
             if (!$building->getStations()->isEmpty()) {
                 return $this->json([
                     'message' => 'building is not empty',
-                ], Response::HTTP_CONFLICT);
+                ], Response::HTTP_FORBIDDEN);
             }
             $manager->remove($building);
             $manager->flush();
@@ -97,11 +95,11 @@ class BuildingController extends AbstractController
             return $this->json([
                 'message' => 'building deleted',
             ], Response::HTTP_OK);
-        } catch (UniqueConstraintViolationException $e) {
+        } catch (Exception $e) {
             $manager->getConnection()->rollBack();
             return $this->json([
                 'message' => $e,
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ], Response::HTTP_BAD_REQUEST);
         }
     }
 }

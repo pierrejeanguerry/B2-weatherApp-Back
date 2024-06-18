@@ -1,20 +1,24 @@
 <?php
 namespace App\Service;
 
+use Symfony\Component\HttpFoundation\Response;
 use App\Entity\User;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class AuthManager
 {
 
-    public function checkAuth(#[CurrentUser()] User $user, Request $request): bool
+    public function checkAuth(#[CurrentUser()] User $user, Request $request): ?JsonResponse
     {
-        $session = $request->getSession();
-        $token = $request->headers->get('token_user');
-        if (null === $user || !($token == $session->get("token_user"))) {
-          return false;
-        }
-        return true;
+      $session = $request->getSession();
+      $token = $request->headers->get('token_user');
+      if (null === $user || !($token == $session->get("token_user"))) {
+          return new JsonResponse([
+              'message' => 'missing credentials',
+          ], Response::HTTP_UNAUTHORIZED);
+      }
+      return null;
     }
 }

@@ -8,6 +8,7 @@ use App\Repository\StationRepository;
 use App\Repository\BuildingRepository;
 use App\Repository\ReadingRepository;
 use App\Service\AuthManager;
+use App\Service\StateManager;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -27,41 +28,21 @@ class StationController extends AbstractController
         ReadingRepository $readingRepo,
         AuthManager $auth,
         EntityManagerInterface $manager,
-        int $id
+        int $id,
+        StateManager $stateManager
     ): Response {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
-
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         $manager->getConnection()->beginTransaction();
         try {
-
             $building = $repo->findOneBy(['id' => $id]);
-            $stations = $building->getStations();
-            foreach ($stations as $station) {
-                $id = $station->getId();
-                $readings = $readingRepo->findBy(["id" => $id]);
-                if (!empty($readings)) {
-                    $latestReading = end($readings);
-                    $readingTime = $latestReading->getDate();
-                    $currentTime = new \DateTime('now', new DateTimeZone('Europe/Paris'));
-                    $currentTime->sub(new \DateInterval('PT1H'));
-                    $readingTime->setTimeZone(new DateTimeZone('Europe/Paris'));
-                    if ($readingTime < $currentTime) {
-                        $station->setState(0);
-                        $manager->persist($station);
-                        $manager->flush();
-                    }
-                }
-            }
-            $manager->getConnection()->commit();
+            $stations = $building->getStations();    
+            $stateManager->refreshStateStations($manager, $stations, $readingRepo);                
         } catch (Exception $e) {
             $manager->getConnection()->rollBack();
             return $this->json([
-                'message' => $e,
-            ], Response::HTTP_CONFLICT);
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
         }
         return $this->json([
             'message' => 'ok',
@@ -79,11 +60,8 @@ class StationController extends AbstractController
         AuthManager $auth
     ): Response {
 
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
 
         $manager->getConnection()->beginTransaction();
 
@@ -133,11 +111,8 @@ class StationController extends AbstractController
         StationRepository $repo,
         AuthManager $auth
     ): Response {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
 
         $manager->getConnection()->beginTransaction();
 
@@ -154,8 +129,8 @@ class StationController extends AbstractController
             $manager->flush();
             $manager->getConnection()->commit();
             return $this->json([
-                'message' => 'station deleted',
-            ], Response::HTTP_ACCEPTED);
+                'message' => 'Station deleted',
+            ], Response::HTTP_OK);
         } catch (Exception $e) {
             $manager->getConnection()->rollBack();
             return $this->json([

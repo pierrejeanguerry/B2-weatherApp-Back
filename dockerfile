@@ -4,7 +4,7 @@ WORKDIR /app
 COPY . /app
 
 RUN apt-get update -y 
-RUN apt-get install -y libmcrypt-dev git unzip 
+RUN apt-get install -y libmcrypt-dev git unzip vim 
 RUN docker-php-ext-install pdo_mysql 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
 && curl -sS https://get.symfony.com/cli/installer | bash \

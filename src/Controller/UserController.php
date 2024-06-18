@@ -64,11 +64,8 @@ class UserController extends AbstractController
         AuthManager $auth,
         int $id
     ): Response {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         return $this->json([
             'username' => $user->getUsername(),
             'email' => $user->getEmail(),
@@ -84,14 +81,10 @@ class UserController extends AbstractController
         UserPasswordHasherInterface $hasher,
         int $id
     ): Response {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         try {
-
-
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
 
@@ -148,11 +141,8 @@ class UserController extends AbstractController
         int $id
     ): Response {
 
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         $jsonbody = $request->getContent();
         $body = json_decode($jsonbody, true);
         if (!password_verify($body['password'], $user->getPassword())) {
