@@ -19,7 +19,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class StationController extends AbstractController
 {
-    #[Route('/api/stations/{id}', name: 'station_list', methods: ['GET'])]
+    #[Route('/api/stations/{id}', name: 'station_list', methods: ['GET'], priority: 2)]
     public function index(
         #[CurrentUser()] User $user,
         Request $request,
@@ -69,7 +69,7 @@ class StationController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/api/stations', name: 'station_create', methods: ["POST"])]
+    #[Route('/api/stations', name: 'station_create', methods: ["POST"], priority: 2)]
     public function create(
         #[CurrentUser()] User $user,
         Request $request,
@@ -125,7 +125,7 @@ class StationController extends AbstractController
         }
     }
 
-    #[Route('/api/stations', name: 'station_delete', methods: ["DELETE"])]
+    #[Route('/api/stations', name: 'station_delete', methods: ["DELETE"], priority: 2)]
     public function delete(
         #[CurrentUser()] User $user,
         Request $request,
@@ -164,7 +164,7 @@ class StationController extends AbstractController
         }
     }
 
-    #[Route('api/stations/{id}', name: 'station_update', methods: ["PATCH"])]
+    #[Route('api/stations/{id}', name: 'station_update', methods: ["PATCH"], priority: 2)]
     public function update(
         #[CurrentUser()] User $user,
         Request $request,

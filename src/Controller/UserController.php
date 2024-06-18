@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Service\AuthManager;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class UserController extends AbstractController
 {
-    #[Route('/api/users', name: 'register', methods: ['POST'])]
+    #[Route('/api/users', name: 'register', methods: ['POST'], priority: 2)]
     public function register(Request $request, EntityManagerInterface $manager, UserPasswordHasherInterface $hasher): Response
     {
         $manager->getConnection()->beginTransaction();
@@ -56,7 +57,7 @@ class UserController extends AbstractController
                 ], Response::HTTP_CONFLICT);
         }
     }
-    #[Route('/api/users/{id}', name: 'get_user', methods: ['GET'])]
+    #[Route('/api/users/{id}', name: 'get_user', methods: ['GET'], priority: 2)]
     public function index(
         #[CurrentUser()] User $user,
         Request $request,
@@ -74,7 +75,7 @@ class UserController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/api/users/{id}', name: 'update_username', methods: ['PATCH'])]
+    #[Route('/api/users/{id}', name: 'update_username', methods: ['PATCH'], priority: 2)]
     public function updateUsername(
         #[CurrentUser()] User $user,
         Request $request,
@@ -89,47 +90,56 @@ class UserController extends AbstractController
             ], Response::HTTP_UNAUTHORIZED);
         }
         try {
+
+
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
-            $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,20}$/';
-            $emailPattern = '/^[^\s@]+@[^\s@]+\.[^\s@]+$/';
 
-            if ($body['password']) {
-                if (!preg_match($pattern, $body['password'])) {
-                    return $this->json([
-                        'message' => 'Password problem',
-                    ], Response::HTTP_BAD_REQUEST);
-                } else {
-                    $password = $hasher->hashPassword($user, $body['password']);
-                    $user->setPassword($password);
-                }
+            $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,20}$/';
+            if (!$body['password'] || !preg_match($pattern, $body['password'])) {
+                return $this->json([
+                    'message' => 'Password problem',
+                ], Response::HTTP_BAD_REQUEST);
+            } else {
+                $password = $hasher->hashPassword($user, $body['password']);
+                $user->setPassword($password);
             }
-            if ($body['email'])
-                if (!preg_match($emailPattern, $body['email']))
-                    return $this->json([
-                        'message' => 'Email problem',
-                    ], Response::HTTP_BAD_REQUEST);
-                else {
-                    $user->setEmail($body['email']);
-                }
-            if ($body['username']) {
+
+            $emailPattern = '/^[^\s@]+@[^\s@]+\.[^\s@]+$/';
+            if (!$body['email'] || !preg_match($emailPattern, $body['email'])) {
+                return $this->json([
+                    'message' => 'Email problem',
+                ], Response::HTTP_BAD_REQUEST);
+            } else {
+                $user->setEmail($body['email']);
+            }
+            
+
+            if (!$body['username']) {
+                return $this->json([
+                    'message' => 'Email problem',
+                ], Response::HTTP_BAD_REQUEST);
+            } else {
                 $user->setUsername($body['username']);
             }
             $manager->persist($user);
             $manager->flush();
-            $manager->getConnection()->commit();
             return $this->json([
                 'message' => 'user updated'
             ], Response::HTTP_OK);
+        }catch (UniqueConstraintViolationException $e){
+            return $this->json([
+                'message' => $e,
+            ], Response::HTTP_CONFLICT);
+            
         } catch (Exception $e) {
-            $manager->getConnection()->rollBack();
             return $this->json([
                 'message' => $e,
             ], Response::HTTP_CONFLICT);
         }
     }
 
-    #[Route('/api/users/{id}', name: 'delete_user', methods: ['DELETE'])]
+    #[Route('/api/users/{id}', name: 'delete_user', methods: ['DELETE'], priority: 2)]
     public function deleteId(
         #[CurrentUser()] User $user,
         Request $request,

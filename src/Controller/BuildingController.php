@@ -17,7 +17,7 @@ use function Symfony\Component\Clock\now;
 
 class BuildingController extends AbstractController
 {
-    #[Route('/api/buildings', name: 'building_list', methods: ['GET'])]
+    #[Route('/api/buildings', name: 'building_list', methods: ['GET'], priority: 2)]
     public function index(#[CurrentUser()] User $user, Request $request): Response
     {
         $session = $request->getSession();
@@ -35,7 +35,7 @@ class BuildingController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/api/buildings', name: 'building_create', methods: ["POST"])]
+    #[Route('/api/buildings', name: 'building_create', methods: ["POST"], priority: 2)]
     public function create(#[CurrentUser()] User $user, Request $request, EntityManagerInterface $manager): Response
     {
         $session = $request->getSession();
@@ -68,7 +68,7 @@ class BuildingController extends AbstractController
         }
     }
 
-    #[Route('/api/buildings/{id}', name: 'building_delete', methods: ["DELETE"])]
+    #[Route('/api/buildings/{id}', name: 'building_delete', methods: ["DELETE"], priority: 2)]
     public function delete(
         #[CurrentUser()] User $user,
         Request $request,

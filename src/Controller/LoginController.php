@@ -12,7 +12,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class LoginController extends AbstractController
 {
-    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    #[Route('/api/login', name: 'api_login', methods: ['POST'], priority: 2)]
     public function index(#[CurrentUser()] ?User $user, Request $request): Response
       {
         if (null === $user) {
@@ -24,17 +24,15 @@ class LoginController extends AbstractController
         $session = $request->getSession();
         $session->set('token_user', $token);
         $username = $user->getUsername();
-        $email = $user->getEmail();
         $id = $user->getId();
         return $this->json([
             'token_user' => $token,
             'username' => $username,
-            'email' => $email,
             'id' => $id
         ]);
     }
 
-    #[Route('/api/login/check', name: 'check_login', methods: ['POST'])]
+    #[Route('/api/login/check', name: 'check_login', methods: ['POST'], priority: 2)]
     public function check(#[CurrentUser()] ?User $user, Request $request, AuthManager $auth): Response
       {
         
@@ -48,7 +46,7 @@ class LoginController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/api/login/logout', name: 'logout_login', methods: ['POST'])]
+    #[Route('/api/login/logout', name: 'logout_login', methods: ['POST'], priority: 2)]
     public function logout(#[CurrentUser()] ?User $user, Request $request, AuthManager $auth): Response
       {
         

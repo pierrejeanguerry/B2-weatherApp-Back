@@ -19,7 +19,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class ReadingController extends AbstractController
 {
-    #[Route('/api/readings', name: 'send_reading', methods: ["POST"])]
+    #[Route('/api/readings', name: 'send_reading', methods: ["POST"], priority: 2)]
     public function send(Request $request, EntityManagerInterface $manager, StationRepository $stationRepo): Response
     {
         $manager->getConnection()->beginTransaction();
@@ -65,13 +65,12 @@ class ReadingController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
-    #[Route('/api/readings/{id}', name: 'days_list_reading', methods: ["GET"])]
+    #[Route('/api/readings/{id}', name: 'days_list_reading', methods: ["GET"], priority: 2)]
     public function list(
         #[CurrentUser()] User $user,
         Request $request,
         StationRepository $stationRepo,
         AuthManager $auth,
-        int $days,
         ReadingRepository $repo,
         int $id
     ): Response {
@@ -83,7 +82,7 @@ class ReadingController extends AbstractController
         try {
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
-            $station = $stationRepo->findOneBy(["mac" => $id]);
+            $station = $stationRepo->findOneBy(["id" => $id]);
             if ($body["days"] === 0)
                 $readings = $repo->find(["id" => $station->getId()]);
             else
