@@ -35,7 +35,7 @@ class Station
     private ?string $name = null;
 
     #[ORM\Column(nullable: true, type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $activation_date = null;
+    private ?\DateTimeInterface $activationDate = null;
 
     #[ORM\ManyToOne(targetEntity: "App\Entity\Building", inversedBy: "stations")]
     #[ORM\JoinColumn(nullable: true)]
@@ -66,12 +66,12 @@ class Station
 
     public function getActivationDate(): ?\DateTimeInterface
     {
-        return $this->activation_date;
+        return $this->activationDate;
     }
 
-    public function setActivationDate(?\DateTimeInterface $activation_date): static
+    public function setActivationDate(?\DateTimeInterface $activationDate): static
     {
-        $this->activation_date = $activation_date;
+        $this->activationDate = $activationDate;
 
         return $this;
     }
