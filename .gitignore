@@ -36,4 +36,3 @@ Backend/.env
 ###> phpstan/phpstan ###
 phpstan.neon
 ###< phpstan/phpstan ###
-.env

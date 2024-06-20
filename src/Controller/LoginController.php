@@ -35,12 +35,8 @@ class LoginController extends AbstractController
     #[Route('/api/login/check', name: 'check_login', methods: ['POST'], priority: 2)]
     public function check(#[CurrentUser()] ?User $user, Request $request, AuthManager $auth): Response
       {
-        
-        if (!$auth->checkAuth($user, $request)) {
-          return $this->json([
-            'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         return $this->json([
           'message' => 'credentials are valid',
         ], Response::HTTP_OK);
@@ -49,12 +45,8 @@ class LoginController extends AbstractController
     #[Route('/api/login/logout', name: 'logout_login', methods: ['POST'], priority: 2)]
     public function logout(#[CurrentUser()] ?User $user, Request $request, AuthManager $auth): Response
       {
-        
-        if (!$auth->checkAuth($user, $request)) {
-          return $this->json([
-            'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+          return $authResponse;
         $session = $request->getSession();
         $session->invalidate();
         return $this->json([

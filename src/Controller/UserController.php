@@ -64,11 +64,8 @@ class UserController extends AbstractController
         AuthManager $auth,
         int $id
     ): Response {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         return $this->json([
             'username' => $user->getUsername(),
             'email' => $user->getEmail(),
@@ -76,7 +73,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/users/{id}', name: 'update_username', methods: ['PATCH'], priority: 2)]
-    public function updateUsername(
+    public function updateUser(
         #[CurrentUser()] User $user,
         Request $request,
         EntityManagerInterface $manager,
@@ -95,31 +92,28 @@ class UserController extends AbstractController
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
 
-            $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,20}$/';
-            if (!$body['password'] || !preg_match($pattern, $body['password'])) {
-                return $this->json([
-                    'message' => 'Password problem',
-                ], Response::HTTP_BAD_REQUEST);
-            } else {
-                $password = $hasher->hashPassword($user, $body['password']);
-                $user->setPassword($password);
+	    $pattern = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,20}$/';
+	    if ($body["password"]){
+	            if (!preg_match($pattern, $body['password'])) {
+	                return $this->json([
+	                    'message' => 'Password problem',
+			], Response::HTTP_BAD_REQUEST);
+		    }
+		    $password = $hasher->hashPassword($user, $body['password']);
+		    $user->setPassword($password);
             }
 
             $emailPattern = '/^[^\s@]+@[^\s@]+\.[^\s@]+$/';
-            if (!$body['email'] || !preg_match($emailPattern, $body['email'])) {
-                return $this->json([
-                    'message' => 'Email problem',
-                ], Response::HTTP_BAD_REQUEST);
-            } else {
+	    if ($body['email']){
+		    if(!preg_match($emailPattern, $body['email'])) {
+    		            return $this->json([
+    		                'message' => 'Email problem',
+    		            ], Response::HTTP_BAD_REQUEST);
+		    }
                 $user->setEmail($body['email']);
             }
-            
 
-            if (!$body['username']) {
-                return $this->json([
-                    'message' => 'Email problem',
-                ], Response::HTTP_BAD_REQUEST);
-            } else {
+            if ($body['username']) {
                 $user->setUsername($body['username']);
             }
             $manager->persist($user);
@@ -131,7 +125,7 @@ class UserController extends AbstractController
             return $this->json([
                 'message' => $e,
             ], Response::HTTP_CONFLICT);
-            
+
         } catch (Exception $e) {
             return $this->json([
                 'message' => $e,
@@ -148,11 +142,8 @@ class UserController extends AbstractController
         int $id
     ): Response {
 
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         $jsonbody = $request->getContent();
         $body = json_decode($jsonbody, true);
         if (!password_verify($body['password'], $user->getPassword())) {

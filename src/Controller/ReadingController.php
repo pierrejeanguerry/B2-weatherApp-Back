@@ -74,11 +74,8 @@ class ReadingController extends AbstractController
         ReadingRepository $repo,
         int $id
     ): Response {
-        if (!$auth->checkAuth($user, $request)) {
-            return $this->json([
-                'message' => 'missing credentials',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
         try {
             $jsonbody = $request->getContent();
             $body = json_decode($jsonbody, true);
