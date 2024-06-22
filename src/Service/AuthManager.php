@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Service;
 
 use Symfony\Component\HttpFoundation\Response;
@@ -12,13 +13,12 @@ class AuthManager
 
     public function checkAuth(#[CurrentUser()] User $user, Request $request): ?JsonResponse
     {
-      $session = $request->getSession();
-      $token = $request->headers->get('token_user');
-      if (null === $user || !($token == $session->get("token_user"))) {
-          return new JsonResponse([
-              'message' => 'missing credentials',
-          ], Response::HTTP_UNAUTHORIZED);
-      }
-      return null;
+        $session = $request->getSession();
+        $tokenFromHeader = $request->headers->get('token_user');
+        $tokenFromSession = $session->get('token_user');
+        if (null === $user || !($tokenFromHeader == $tokenFromSession)) {
+            return new JsonResponse(['message' => 'missing credentials',], 401);
+        }
+        return null;
     }
 }
