@@ -21,6 +21,28 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 class StationController extends AbstractController
 {
     #[Route('/api/stations/{id}', name: 'station_list', methods: ['GET'], priority: 2)]
+    public function list_all(
+        #[CurrentUser()] User $user,
+        Request $request,
+        StationRepository $repo,
+        AuthManager $auth,
+    ): Response {
+        if (($authResponse = $auth->checkAuth($user, $request)) !== null)
+            return $authResponse;
+        try {
+            $stations = $repo->findStationsByUserId($user->getId());
+        } catch (Exception $e) {
+            return $this->json([
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+        return $this->json([
+            'message' => 'ok',
+            'list_station' => $stations,
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/api/stations/{id}', name: 'station_list', methods: ['GET'], priority: 2)]
     public function index(
         #[CurrentUser()] User $user,
         Request $request,

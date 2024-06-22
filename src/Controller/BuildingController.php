@@ -17,8 +17,49 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 use function Symfony\Component\Clock\now;
 
+
+
 class BuildingController extends AbstractController
 {
+
+    #[Route('api/buildings/{id}', name: 'building_update', methods: ["PATCH"], priority: 2)]
+    public function update_building(
+        #[CurrentUser()] User $user,
+        Request $request,
+        EntityManagerInterface $manager,
+        AuthManager $auth,
+        BuildingRepository $repo,
+        int $id
+    ) {
+
+        if (!$auth->checkAuth($user, $request)) {
+            return $this->json([
+                'message' => 'missing credentials',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $manager->getConnection()->beginTransaction();
+
+        try {
+            $jsonbody = $request->getContent();
+            $body = json_decode($jsonbody, true);
+            $building = $repo->findOneBy(['id' => $id]);
+            if ($body['new_name'] != "")
+                $building->setName($body['new_name']);
+            $manager->persist($building);
+            $manager->flush();
+            $manager->getConnection()->commit();
+            return $this->json([
+                'message' => 'station updated'
+            ], Response::HTTP_OK);
+        } catch (Exception $e) {
+            $manager->getConnection()->rollBack();
+            return $this->json([
+                'message' => $e,
+            ], Response::HTTP_CONFLICT);
+        }
+    }
+
     #[Route('/api/buildings', name: 'building_list', methods: ['GET'], priority: 2)]
     public function index(
         #[CurrentUser()] User $user, 
@@ -65,7 +106,7 @@ class BuildingController extends AbstractController
             $manager->getConnection()->rollBack();
             return $this->json([
                 'message' => $e,
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            ], Response::HTTP_CONFLICT);
         }
     }
 

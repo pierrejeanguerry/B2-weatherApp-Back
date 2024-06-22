@@ -20,6 +20,18 @@ class StationRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Station::class);
     }
+    
+    public function findStationsByUserId(int $userId): array
+    {
+        return $this->createQueryBuilder('station')
+            ->innerJoin('station.building', 'building')
+            ->innerJoin('building.user', 'user')
+            ->where('user.id = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getResult();
+    }
+
 
 //    /**
 //     * @return Station[] Returns an array of Station objects
