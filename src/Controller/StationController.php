@@ -27,8 +27,8 @@ class StationController extends AbstractController
         Request $request,
         StationRepository $repo,
         AuthManager $auth,
-        StateManager $stateManager,
-        RequestValidator $validator
+        RequestValidator $validator,
+        StateManager $stateManager
     ): Response {
         try {
             if (($authResponse = $auth->checkAuth($user, $request)) !== null)
@@ -46,9 +46,13 @@ class StationController extends AbstractController
                 ? $repo->findAllStationsByUserId($user->getId())
                 : $repo->findByUserId($user->getId(), $body["building_id"]);
 
-            $stateManager->refreshStationsState($stations);
-
-            return $this->json(['stations' => $stations,], 200);
+            $return = $stateManager->refreshStationsState($stations);
+            if ($return instanceof JsonResponse) {
+                return $return;
+            }
+            return $this->json(["stations" => $stations,], 200, [], [
+                "groups" => ["station"]
+            ]);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }

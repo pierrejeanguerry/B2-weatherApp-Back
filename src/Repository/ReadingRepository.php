@@ -21,17 +21,80 @@ class ReadingRepository extends ServiceEntityRepository
         parent::__construct($registry, Reading::class);
     }
 
-    public function findRecentReadingsByDay(int $stationId, int $days): array
+
+    public function findLastYearReadingsByMonth(int $stationId): array
     {
+        $dateFrom = new \DateTime();
+        $dateFrom->modify('-365 days');
+
         $qb = $this->createQueryBuilder('r')
-            ->andWhere('r.station = :stationId')
-            ->andWhere('r.date >= :date')
+            ->select('MONTH(r.date) AS date, 
+                      AVG(r.altitude) AS avgAltitude, 
+                      AVG(r.temperature) AS avgTemperature, 
+                      AVG(r.pressure) AS avgPressure, 
+                      AVG(r.humidity) AS avgHumidity')
+            ->where('r.station = :stationId')
+            ->andWhere('r.date >= :dateFrom')
+            ->groupBy('date')
+            ->orderBy('r.date', 'DESC')
             ->setParameter('stationId', $stationId)
-            ->setParameter('date', new \DateTime("-$days days"))
-            ->orderBy('r.date', 'DESC');
+            ->setParameter('dateFrom', $dateFrom);
 
         return $qb->getQuery()->getResult();
     }
+
+    public function findRecentReadingsByDay(int $stationId, int $days): array
+    {
+        $dateFrom = new \DateTime();
+        $dateFrom->modify('-' . $days . ' days');
+
+        $entityManager = $this->getEntityManager();
+
+        $entityManager = $this->getEntityManager();
+
+        $query = $entityManager->createQuery('
+        SELECT DATE_FORMAT(r.date, \'%Y-%m-%d\') AS date, 
+               AVG(r.altitude) AS avgAltitude, 
+               AVG(r.temperature) AS avgTemperature, 
+               AVG(r.pressure) AS avgPressure, 
+               AVG(r.humidity) AS avgHumidity 
+        FROM App\Entity\Reading r 
+        WHERE r.station = :stationId 
+        AND r.date >= :dateFrom 
+        GROUP BY date 
+        ORDER BY date DESC
+    ')
+            ->setParameter('stationId', $stationId)
+            ->setParameter('dateFrom', $dateFrom->format('Y-m-d'));
+
+        return $query->getResult();
+    }
+
+    public function findRecentReadingsByHour(int $stationId, int $days): array
+    {
+        $dateFrom = new \DateTime();
+        $dateFrom->modify('-' . $days . ' days');
+
+        $entityManager = $this->getEntityManager();
+
+        $query = $entityManager->createQuery('
+        SELECT DATE_FORMAT(r.date, \'%Y-%m-%d %H:00:00\') AS date,
+               AVG(r.altitude) AS avgAltitude,
+               AVG(r.temperature) AS avgTemperature,
+               AVG(r.pressure) AS avgPressure,
+               AVG(r.humidity) AS avgHumidity
+        FROM App\Entity\Reading r
+        WHERE r.station = :stationId
+        AND r.date >= :dateFrom
+        GROUP BY date
+        ORDER BY date DESC
+    ')
+            ->setParameter('stationId', $stationId)
+            ->setParameter('dateFrom', $dateFrom->format('Y-m-d H:i:s'));
+
+        return $query->getResult();
+    }
+
     //    /**
     //     * @return Reading[] Returns an array of Reading objects
     //     */

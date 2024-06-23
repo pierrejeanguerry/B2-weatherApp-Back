@@ -8,38 +8,45 @@ use ApiPlatform\Metadata\Post;
 use App\Repository\ReadingRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ReadingRepository::class)]
 #[ApiResource(
     operations: [
         new Get(),
         new Post(),
-]
+    ]
 )]
 class Reading
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['reading'])]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['reading'])]
     private ?\DateTime $date = null;
 
     #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    #[Groups(['reading'])]
     private ?float $temperature = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Groups(['reading'])]
     private ?int $humidity = null;
 
     #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    #[Groups(['reading'])]
     private ?float $altitude = null;
 
     #[ORM\Column(type: Types::FLOAT, nullable: true)]
+    #[Groups(['reading'])]
     private ?float $pressure = null;
 
-    #[ORM\ManyToOne(targetEntity:"App\Entity\Station", inversedBy:"readings")]
-    #[ORM\JoinColumn(nullable:false)]
+    #[ORM\ManyToOne(targetEntity: "App\Entity\Station", inversedBy: "readings")]
+    #[ORM\JoinColumn(nullable: false)]
     private $station;
 
     public function getId(): ?int

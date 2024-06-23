@@ -10,6 +10,7 @@ use App\Repository\BuildingRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: BuildingRepository::class)]
 #[ApiResource(
@@ -24,9 +25,11 @@ class Building
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['building'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['building'])]
     private ?string $name = null;
 
     #[ORM\ManyToOne(targetEntity: "App\Entity\User", inversedBy: "buildings")]

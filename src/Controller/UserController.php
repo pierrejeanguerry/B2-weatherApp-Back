@@ -29,7 +29,9 @@ class UserController extends AbstractController
             return $this->json([
                 'username' => $user->getUsername(),
                 'email' => $user->getEmail(),
-            ], 200);
+            ], 200, [], [
+                'groups' => ['user']
+            ]);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
@@ -104,14 +106,14 @@ class UserController extends AbstractController
                 'new_email' => 'string',
                 'new_password' => 'string',
                 'new_username' => 'string',
-                'password' => 'stringNotEmpty'
+                'password' => 'string'
             ];
             $body = $validator->validateJsonRequest($request, $requiredFields);
             if ($body instanceof JsonResponse) {
                 return $body;
             }
 
-            if (!password_verify($body['password'], $user->getPassword()))
+            if (empty($body["new_username"]) && !password_verify($body['password'], $user->getPassword()))
                 return new JsonResponse(['error' => 'Wrong credentials'], 403);
 
             $manager->getConnection()->beginTransaction();
@@ -122,7 +124,7 @@ class UserController extends AbstractController
                     $manager->getConnection()->rollBack();
                     return new JsonResponse(['error' => 'Invalid password value'], 400);
                 }
-                $hashedPassword = $hasher->hashPassword($user, $body['password']);
+                $hashedPassword = $hasher->hashPassword($user, $body['new_password']);
                 $user->setPassword($hashedPassword);
             }
 
@@ -132,7 +134,7 @@ class UserController extends AbstractController
                     $manager->getConnection()->rollBack();
                     return new JsonResponse(['error' => 'Invalid email value'], 400);
                 }
-                $user->setEmail($body['new_password']);
+                $user->setEmail($body['new_email']);
             }
 
             if (!empty($body['new_username'])) {
@@ -181,6 +183,8 @@ class UserController extends AbstractController
             $manager->flush();
 
             $manager->getConnection()->commit();
+            $manager->clear();
+
             $session = $request->getSession();
             $session->invalidate();
 

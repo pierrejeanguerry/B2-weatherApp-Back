@@ -28,6 +28,7 @@ class ReadingController extends AbstractController
         RequestValidator $validator
     ): Response {
         try {
+
             if (($authResponse = $auth->checkAuth($user, $request)) !== null)
                 return $authResponse;
             $requiredFields = [
@@ -41,12 +42,16 @@ class ReadingController extends AbstractController
             $station = $stationRepo->findOneByUserId($user->getId(), $body["station_id"]);
             if ($station === null)
                 return new JsonResponse(['error' => 'Invalid field values'], 400);
-
-            if ($body["days"] === 0)
-                $readings = $repo->find(["id" => $station->getId()]);
-            else
+            $readings = [];
+            if ($body["days"] == 365)
+                $readings = $repo->findLastYearReadingsByMonth($station->getId());
+            if ($body["days"] == 30 || $body["days"] == 7)
                 $readings = $repo->findRecentReadingsByDay($station->getId(), $body["days"]);
-            return new JsonResponse(['list_readings' => $readings], 200);
+            if ($body["days"] == 1)
+                $readings = $repo->findRecentReadingsByHour($station->getId(), $body["days"]);
+            return $this->json(['readings' => $readings], 200, [], [
+                'groups' => ['reading']
+            ]);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
@@ -57,7 +62,7 @@ class ReadingController extends AbstractController
     {
         try {
             $requiredFields = [
-                'mac_address' => 'strinNotEmpty',
+                'mac_address' => 'stringNotEmpty',
                 'temperature' => 'numeric',
                 'altitude' => 'numeric',
                 'pressure' => 'numeric',

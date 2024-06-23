@@ -31,7 +31,9 @@ class BuildingController extends AbstractController
                 return $authResponse;
 
             $buildings = $user->getBuildings();
-            return $this->json(['buildings' => $buildings,], 200);
+            return $this->json(['buildings' => $buildings,], 200, [], [
+                "groups" => ["building"]
+            ]);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }

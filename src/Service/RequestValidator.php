@@ -9,13 +9,17 @@ class RequestValidator
 {
     public function validateJsonRequest(Request $request, array $requiredFields): array|JsonResponse
     {
-        $jsonBody = $request->getContent();
-        $body = json_decode($jsonBody, true);
+        if ($request->getMethod() === 'GET') {
+            foreach ($requiredFields as $field => $type)
+                $body[$field] = $request->query->get($field);
+        } else {
+            $jsonBody = $request->getContent();
+            $body = json_decode($jsonBody, true);
+            // return new JsonResponse(['error' => $body], 400);
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return new JsonResponse(['error' => 'Invalid JSON'], 400);
+            if (json_last_error() !== JSON_ERROR_NONE)
+                return new JsonResponse(['error' => 'Invalid JSON'], 400);
         }
-
         foreach ($requiredFields as $field => $type) {
             if (!isset($body[$field])) {
                 return new JsonResponse(['error' => 'Missing required field: ' . $field], 400);
